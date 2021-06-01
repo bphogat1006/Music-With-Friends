@@ -1,0 +1,17 @@
+
+#request-authorization {
+  display: none;
+}
+
+#user-data {
+  display: none;
+}
+
+#profile-picture {
+  width: 6em;
+  height: 6em;
+}
+
+.select {
+  width: auto;
+}
