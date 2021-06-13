@@ -15,9 +15,11 @@
     <div class="container">
       
       <div id="request-authorization" class="row my-5">
-        <div class="mb-3">
-          <h1 class="display-6">Click below to authenticate with Spotify</h1> 
+        <div class="d-flex align-items-center mb-4">
+          <img id="website-thumbnail" src="favicon.png">
+          <h1 class="display-1 ms-4">Music With Friends</h1>
         </div>
+        <h1 class="display-6 mb-4">Click below to authenticate with Spotify.</h1> 
         <input id="authenticate-button" class="btn btn-lg btn-primary" type="button" onclick="requestAuthorization()" value="Request Authorization"></input>
       </div>
       
@@ -30,6 +32,15 @@
           </div>
         </div>
 
+        <div id="progress-container" class="container">
+          <p id="progress-info"></p>
+          <div class="progress">
+            <div id="progress" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
+          </div>
+        </div>
+
+        <div id="debug-point-system" class="container" style="display: none;"></div>
+
         <div id="top-listens-information">
           <div class="d-flex align-items-center">
             <p class="display-6 my-3">Here are your top artists and tracks.</p>
@@ -38,7 +49,7 @@
           
           <select id="select-period" class="form-select form-select-lg mb-4" onchange="refetch(this)">
             <option value="short_term">Short-Term</option>
-            <option value="medium_term">Medium-Term</option>
+            <option value="medium_term" selected>Medium-Term</option>
             <option value="long_term">Long-Term</option>
           </select>
           
@@ -65,8 +76,15 @@
       function refetch(selectObject) {
         fetchPeriod = selectObject.value
         document.getElementById('top-artists-list').innerHTML = ''
-        getTopListens()
         document.getElementById('top-tracks-list').innerHTML = ''
+        getTopListens("artists")
+        .then((data) => {
+          handleTopListensResponse(data)
+          return getTopListens("tracks")
+        })
+        .then((data) => {
+          handleTopListensResponse(data)
+        })
       }
     </script>
   </body>

@@ -7,9 +7,8 @@ var client_secret = ""
 
 var access_token = null
 var refresh_token = null
-
-var fetchPeriod = "short_term"
 var refreshingAccessToken = false
+var fetchPeriod = "medium_term"
 
 const AUTHORIZE = "https://accounts.spotify.com/authorize"
 const TOKEN = "https://accounts.spotify.com/api/token"
@@ -30,6 +29,11 @@ function onPageLoad() {
     else {
       document.getElementById("user-data").style.display = 'block'
 
+      // make sure userData in localStorage is initialized
+      if(localStorage.getItem("userData") == null) {
+        localStorage.setItem("userData", JSON.stringify({}))
+      }
+
       // see if access token is expired
       testAccessToken()
       .catch((status) => {
@@ -37,24 +41,26 @@ function onPageLoad() {
       })
       // if so, refresh it
       // then get user profile info
-      .then((data) => {
-        if(data != undefined && JSON.parse(data).access_token != undefined) {
-          handleAuthorizationResponse(data)
+      .then((responseText) => {
+        if(responseText != undefined && JSON.parse(responseText).access_token != undefined) {
+          handleAuthorizationResponse(responseText)
         }
         return getUserProfile()
       })
       // then get top artists
-      .then((data) => {
-        handleUserProfileResponse(data)
+      .then((responseText) => {
+        handleUserProfileResponse(responseText)
         return getTopListens("artists")
       })
       // then get top tracks
-      .then((data) => {
-        handleTopListensResponse(data)
+      .then((responseText) => {
+        handleTopListensResponse(responseText)
         return getTopListens("tracks")
       })
-      .then((data) => {
-        handleTopListensResponse(data)
+      // then calculate user's favorite artists
+      .then((responseText) => {
+        handleTopListensResponse(responseText)
+        getUserData() // function from userData.js
       })
     }
   }
@@ -168,27 +174,47 @@ function makeAPIRequest (method, endpoint, body) {
         console.log(JSON.parse(this.responseText))
         resolve(this.responseText);
       } else {
-        if(this.status == 401) {
-          // alert("access token expired")
-        } else {
-          var error = this.status + ": " + this.responseText
-          console.log(error)
-          alert(error)
-        }
+        var error = this.status + ": " + this.responseText
+        console.log(error)
+        if(this.status != 401) alert(error)
         reject(this.status, this.responseText)
       }
     };
     xhr.onerror = function () {
-      if(this.status == 401) {
-        // alert("access token expired")
-      } else {
-        var error = this.status + ": " + this.responseText
-        console.log(error)
-        alert(error)
-      }
+      var error = this.status + ": " + this.responseText
+      console.log(error)
+      if(this.status != 401) alert(error)
       reject(this.status, this.responseText)
     };
   });
+}
+
+// Chains multiple promisified API requests into one big promise
+// ex. used for getting all saved tracks (because limit is only 50 at a time)
+function chainApiRequests(apiRequest, handler, index) {
+  return new Promise(function(resolve, reject) {
+    function oncomplete() {
+      resolve()
+    }
+    function onfailure() {
+      reject()
+    }
+    (function nextApiRequest(apiRequest, handler, offset) {
+      if(offset == undefined) {
+        offset = 0
+      }
+      apiRequest(offset, index).then((responseText) => {
+        if(handler(responseText)) {
+          offset += 50
+          nextApiRequest(apiRequest, handler, offset)
+        } else {
+          oncomplete()
+        }
+      }, () => {
+        onfailure()
+      })
+    })(apiRequest, handler)
+  })
 }
 
 /** API calls the website will make to gather user data */
@@ -204,15 +230,22 @@ function getUserProfile() {
 function handleUserProfileResponse(responseText) {
   var data = JSON.parse(responseText)
   document.getElementById("display-name").innerHTML += '<small class="text-muted">' + data.display_name + '</small>'
-  document.getElementById("profile-picture").setAttribute("src", data.images[0].url)
+  var userProfile = {
+    display_name: data.display_name,
+    profile_picture: null
+  }
+  if(data.images != undefined || data.images[0].url != undefined) {
+    document.getElementById("profile-picture").setAttribute("src", data.images[0].url)
+    userProfile.profile_picture = data.images[0].url
+  }
+  localStorage.setItem("userProfile", JSON.stringify(userProfile))
 }
 
-function getTopListens(type) {
-  document.getElementById("loading-top-listens").style.display = "block"
+function getTopListens(type, handler) {
   var queryParams = "?time_range=" + fetchPeriod
   queryParams += "&limit=50"
   queryParams += "&offset=0"
-  return makeAPIRequest("GET", "https://api.spotify.com/v1/me/top/"+type+queryParams, null, handleTopListensResponse)
+  return makeAPIRequest("GET", "https://api.spotify.com/v1/me/top/"+type+queryParams, null)
 }
 
 function handleTopListensResponse(responseText) {

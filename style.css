@@ -3,6 +3,11 @@
   display: none;
 }
 
+#website-thumbnail {
+  width: 8em;
+  height: 8em;
+}
+
 #user-data {
   display: none;
 }
