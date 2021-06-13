@@ -25,7 +25,7 @@ var pointSystem = {
   }
 }
 
-var refreshData = true
+var refreshData = false
 
 function getUserData() {
   var userData = JSON.parse(localStorage.getItem("userData"))
@@ -82,6 +82,7 @@ function getUserData() {
     })
     .then((responseText) => {
       handleTopTracksResponse(responseText)
+
       document.getElementById("progress-container").style.display = "none"
 
       calculateFavoriteArtists()
@@ -99,8 +100,15 @@ function getUserData() {
   }
   else {
     artistsRanked = userData.artistsRanked
+
+    document.getElementById("progress-container").style.display = "none"
     debugPointSystem()
   }
+}
+
+function downloadData() {
+  uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(artistsRanked))
+  location.href = uriContent
 }
 
 function calculateFavoriteArtists() {
