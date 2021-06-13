@@ -1,4 +1,11 @@
 
+/*
+var redirect_uri = ""
+
+var client_id = ""
+var client_secret = ""
+*/
+
 var access_token = null
 var refresh_token = null
 var refreshingAccessToken = false
