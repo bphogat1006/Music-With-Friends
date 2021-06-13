@@ -74,11 +74,13 @@
     <script id="credentials"></script>
     <script id="app"></script>
     <script id="userData"></script>
+    <script id="compareData"></script>
     <script type="text/javascript">
       var time = Date.now()
       document.getElementById('credentials').src = 'credentials.js' + '?t=' + time
       document.getElementById('app').src = 'app.js' + '?t=' + time
       document.getElementById('userData').src = 'userData.js' + '?t=' + time
+      document.getElementById('compareData').src = 'compareData.js' + '?t=' + time
     </script>
     <script>
       function refetch(selectObject) {

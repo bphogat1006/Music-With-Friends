@@ -100,9 +100,9 @@ function getUserData() {
   }
   else {
     artistsRanked = userData.artistsRanked
-
     document.getElementById("progress-container").style.display = "none"
     debugPointSystem()
+    // compareData()
   }
 }
 
@@ -114,58 +114,58 @@ function downloadData() {
 function calculateFavoriteArtists() {
   // handle saved tracks
   savedTracks.forEach((item) => {
-    addPoints(item.track.artists[0].name, pointSystem.savedTrack, "savedTrack")
+    addPoints(item.track.artists[0].name, item.track.artists[0].id, pointSystem.savedTrack, "savedTrack")
   })
 
   // handle playlist items
   playlistTracks.forEach((item) => {
-    addPoints(item.track.artists[0].name, pointSystem.playlistTrack, "playlistTrack")
+    addPoints(item.track.artists[0].name, item.track.artists[0].id, pointSystem.playlistTrack, "playlistTrack")
   })
 
   // handle top artists
   topArtists.shortTerm.forEach((artist) => {
-    addPoints(artist.name, pointSystem.topArtist.shortTerm, "topArtist")
+    addPoints(artist.name, artist.id, pointSystem.topArtist.shortTerm, "topArtist")
   })
   topArtists.mediumTerm.forEach((artist) => {
-    addPoints(artist.name, pointSystem.topArtist.mediumTerm, "topArtist")
+    addPoints(artist.name, artist.id, pointSystem.topArtist.mediumTerm, "topArtist")
   })
   topArtists.longTerm.forEach((artist) => {
-    addPoints(artist.name, pointSystem.topArtist.longTerm, "topArtist")
+    addPoints(artist.name, artist.id, pointSystem.topArtist.longTerm, "topArtist")
   })
   
   // handle top tracks
   topTracks.shortTerm.forEach((track) => {
-    addPoints(track.artists[0].name, pointSystem.topTrack.shortTerm, "topTrack")
+    addPoints(track.artists[0].name, track.artists[0].id, pointSystem.topTrack.shortTerm, "topTrack")
   })
   topTracks.mediumTerm.forEach((track) => {
-    addPoints(track.artists[0].name, pointSystem.topTrack.mediumTerm, "topTrack")
+    addPoints(track.artists[0].name, track.artists[0].id, pointSystem.topTrack.mediumTerm, "topTrack")
   })
   topTracks.longTerm.forEach((track) => {
-    addPoints(track.artists[0].name, pointSystem.topTrack.longTerm, "topTrack")
+    addPoints(track.artists[0].name, track.artists[0].id, pointSystem.topTrack.longTerm, "topTrack")
   })
 
-  sortArtists()
+  sortArtists(artistsRanked)
 }
 
-function sortArtists() {
-  var n = artistsRanked.length, curr, j, tmp
+function sortArtists(arr) {
+  var n = arr.length, curr, j, tmp
   for(var i=1; i < n; i++) {
     curr = i
     for(j=i-1; j >= 0; j--) {
-      if(artistsRanked[curr].points.total > artistsRanked[j].points.total) {
-        tmp = artistsRanked[curr]
-        artistsRanked[curr] = artistsRanked[j]
-        artistsRanked[j] = tmp
+      if(arr[curr].points.total > arr[j].points.total) {
+        tmp = arr[curr]
+        arr[curr] = arr[j]
+        arr[j] = tmp
         curr = j
       } else {break}
     }
   }
 }
 
-function addPoints(name, points, type) {
+function addPoints(name, id, points, type) {
   var exists = false
   for(var artist of artistsRanked) {
-    if(artist.name === name) {
+    if(artist.id === id) {
       artist.points.total += points
       switch (type) {
         case "savedTrack":
@@ -188,6 +188,7 @@ function addPoints(name, points, type) {
   if(exists) return
   var artist = {points: {}}
   artist.name = name
+  artist.id = id
   artist.points.total = points
   artist.points.savedTrack = 0
   artist.points.playlistTrack = 0
