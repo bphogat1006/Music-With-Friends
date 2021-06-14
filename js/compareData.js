@@ -1,19 +1,26 @@
 
 var commonArtists = []
+var friend = 'kyle'
+var friendData = null
+var playlistID = null
 
 function compareData() {
-  var friend = 'kyle'
-  var friendsArtists = null
   fetch('data/'+friend+'.json')
   .then(response => response.json())
   .then(jsonResponse => {
-    friendsArtists = jsonResponse
-    commonArtists = findCommon(artistsRanked, friendsArtists)
+    friendData = jsonResponse
+    commonArtists = findCommon(artistsRanked, friendData)
     
     return getAllArtistTopTracks(getArtistTopTracks, handleArtistTopTracks)
   })
-  .then(() => {
-    console.log(commonArtists)
+  // .then(() => {
+  //   console.log(commonArtists)
+  //   return createPlaylist()
+  // })
+  .then((responseText) => {
+    // playlistID = JSON.parse(responseText).id
+    playlistID = '6KYUUxFT1eo8J6GtsbZSzP'
+    return addTracks()
   })
 }
 
@@ -83,4 +90,20 @@ function getArtistTopTracks(index) {
 function handleArtistTopTracks(responseText, index) {
   var data = JSON.parse(responseText)
   commonArtists[index].topTracks = data.tracks
+}
+
+function createPlaylist() {
+  var myProfile = JSON.parse(localStorage.getItem("userProfile"))
+  var myName = myProfile.display_name
+  var myID = myProfile.id
+  var body = {
+    name: "Songs for "+myName+' and '+friend,
+    description: "",
+    public: false
+  }
+  return makeAPIRequest("POST", "https://api.spotify.com/v1/users/"+myID+"/playlists", body)
+}
+
+function addTracks() {
+
 }

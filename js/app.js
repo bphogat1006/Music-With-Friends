@@ -34,7 +34,7 @@ function onPageLoad() {
       if(localStorage.getItem("userData") == null) {
         localStorage.setItem("userData", JSON.stringify({}))
       }
-
+      
       // see if access token is expired
       testAccessToken()
       .catch((status) => {
@@ -74,7 +74,7 @@ function requestAuthorization() {
   url += "&response_type=code"
   url += "&redirect_uri=" + encodeURI(redirect_uri)
   url += "&show_dialog=true"
-  url += "&scope=user-top-read user-library-read playlist-read-private playlist-read-collaborative"
+  url += "&scope=user-top-read user-library-read playlist-read-private playlist-read-collaborative playlist-modify-private"
   window.location.href = url // Show Spotify's authorization screen
 }
 
@@ -165,13 +165,13 @@ function handleAuthorizationResponse(responseText) {
 // Promisified XMLHttpRequest to the Spotify API using access token
 function makeAPIRequest (method, endpoint, body) {
   return new Promise(function (resolve, reject) {
-    var xhr = new XMLHttpRequest();
+    xhr = new XMLHttpRequest();
     xhr.open(method, endpoint)
     xhr.setRequestHeader('Content-Type', 'application/json')
     xhr.setRequestHeader('Authorization', 'Bearer ' + access_token)
-    xhr.send(body)
+    xhr.send(JSON.stringify(body))
     xhr.onload = function () {
-      if (this.status == 200) {
+      if (this.status < 300) {
         console.log(JSON.parse(this.responseText))
         resolve(this.responseText);
       } else {
@@ -191,7 +191,8 @@ function makeAPIRequest (method, endpoint, body) {
 }
 
 // Chains multiple promisified API requests into one big promise
-// ex. used for getting all saved tracks (because limit is only 50 at a time)
+// because limit is only 50 at a time
+// Used for getting all saved tracks and playlsit tracks
 function chainApiRequests(apiRequest, handler, index) {
   return new Promise(function(resolve, reject) {
     function oncomplete() {
@@ -233,9 +234,13 @@ function handleUserProfileResponse(responseText) {
   document.getElementById("display-name").innerHTML += '<small class="text-muted">' + data.display_name + '</small>'
   var userProfile = {
     display_name: data.display_name,
-    profile_picture: null
+    profile_picture: null,
+    id: data.id
   }
-  if(data.images != undefined || data.images[0].url != undefined) {
+  if(data.images[0] == undefined) {
+    document.getElementById("profile-picture").setAttribute("src", "img/defaultProfilePicture.jpg")
+  }
+  else {
     document.getElementById("profile-picture").setAttribute("src", data.images[0].url)
     userProfile.profile_picture = data.images[0].url
   }

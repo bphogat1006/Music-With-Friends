@@ -31,6 +31,7 @@ function getUserData() {
   var userData = JSON.parse(localStorage.getItem("userData"))
   // if userData from localStorage is empty, get user data
   if(Object.keys(userData).length == 0 || refreshData) {
+    document.getElementById("progress-container").style.display = "block"
 
     // first get all saved tracks & artists
     chainApiRequests(getTracks, handleTracksResponse)
@@ -86,7 +87,7 @@ function getUserData() {
       document.getElementById("progress-container").style.display = "none"
 
       calculateFavoriteArtists()
-      debugPointSystem()
+      // debugPointSystem()
 
       // set userData in localStorage
       localStorage.setItem("userData", JSON.stringify({
@@ -100,14 +101,20 @@ function getUserData() {
   }
   else {
     artistsRanked = userData.artistsRanked
-    document.getElementById("progress-container").style.display = "none"
-    debugPointSystem()
+    // debugPointSystem()
     // compareData()
   }
 }
 
 function downloadData() {
-  uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(artistsRanked))
+  var userData = JSON.parse(localStorage.getItem("userData"))
+  var data = {
+    id: userData.id,
+    name: userData.display_name,
+    topArtists: artistsRanked,
+    savedTracks: savedTracks
+  }
+  uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(data))
   location.href = uriContent
 }
 

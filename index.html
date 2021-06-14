@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Music With Friends</title>
-    <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+    <link rel="shortcut icon" type="image/png" href="img/favicon.png"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     <link href="style.css" rel="stylesheet">
   </head>
@@ -16,37 +16,37 @@
       
       <div id="request-authorization" class="row my-5">
         <div class="d-flex align-items-center mb-4">
-          <img id="website-thumbnail" src="favicon.png">
+          <img id="website-thumbnail" src="img/favicon.png">
           <h1 class="display-1 ms-4">Music With Friends</h1>
         </div>
         <h1 class="display-6 mb-4">Click below to authenticate with Spotify.</h1> 
         <input id="authenticate-button" class="btn btn-lg btn-primary" type="button" onclick="requestAuthorization()" value="Request Authorization"></input>
       </div>
       
-      <div id="user-data" class="row my-5">
+      <div id="user-data" class="row m-5">
 
         <div id="user-profile">
           <div class="d-flex align-items-center">
-            <h1 id="display-name" class="display-1 me-3">Hello, </h1>
-            <img id="profile-picture" class="img-fluid rounded-pill m-3">
+            <h1 id="display-name" class="display-1 me-4 mb-3">Hello, </h1>
+            <img id="profile-picture" class="img-fluid rounded-pill">
           </div>
         </div>
 
-        <div id="progress-container" class="container">
+        <div id="progress-container" class="container mb-3" style="display: none;">
           <p id="progress-info"></p>
           <div class="progress">
             <div id="progress" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
           </div>
         </div>
 
-        <div id="debug-point-system" class="container" style="display: none;">
-          <button class="btn btn-primary" onclick="downloadData()">Download Data</button>
+        <div id="debug-point-system" class="container mb-3" style="display: none;">
+          <button class="btn btn-primary mb-3" onclick="downloadData()">Download Data</button>
         </div>
 
-        <div id="top-listens-information">
-          <div class="d-flex align-items-center">
-            <p class="display-6 my-3">Here are your top artists and tracks.</p>
-            <div id="loading-top-listens" class="spinner-border ms-3 text-primary" role="status" aria-hidden="true"></div>
+        <div id="top-listens-information" class="container">
+          <div class="d-inline-flex align-items-center">
+            <p class="display-6 me-3 mb-3">Here are your top artists and tracks.</p>
+            <div id="loading-top-listens" class="spinner-border text-primary" role="status"></div>
           </div>
           
           <select id="select-period" class="form-select form-select-lg mb-4" onchange="refetch(this)">
@@ -76,11 +76,12 @@
     <script id="userData"></script>
     <script id="compareData"></script>
     <script type="text/javascript">
+      // force browser to avoid caching scripts
       var time = Date.now()
       document.getElementById('credentials').src = 'credentials.js' + '?t=' + time
-      document.getElementById('app').src = 'app.js' + '?t=' + time
-      document.getElementById('userData').src = 'userData.js' + '?t=' + time
-      document.getElementById('compareData').src = 'compareData.js' + '?t=' + time
+      document.getElementById('app').src = 'js/app.js' + '?t=' + time
+      document.getElementById('userData').src = 'js/userData.js' + '?t=' + time
+      document.getElementById('compareData').src = 'js/compareData.js' + '?t=' + time
     </script>
     <script>
       function refetch(selectObject) {
