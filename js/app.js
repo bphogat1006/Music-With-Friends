@@ -21,7 +21,7 @@ function onPageLoad() {
   }
   // otherwise load page
   else {
-    access_token = localStorage.getItem("access_token")
+    access_token = localStorage.access_token
     // show form to authorize user if there's no access token
     if(access_token == null) {
       document.getElementById("request-authorization").style.display = 'block'
@@ -30,9 +30,9 @@ function onPageLoad() {
     else {
       document.getElementById("user-data").style.display = 'block'
 
-      // make sure userData in localStorage is initialized
-      if(localStorage.getItem("userData") == null) {
-        localStorage.setItem("userData", JSON.stringify({}))
+      // make sure artistsRanked in localStorage is initialized
+      if(localStorage.artistsRanked == null) {
+        localStorage.setItem("artistsRanked", JSON.stringify([]))
       }
       
       // see if access token is expired
@@ -74,7 +74,7 @@ function requestAuthorization() {
   url += "&response_type=code"
   url += "&redirect_uri=" + encodeURI(redirect_uri)
   url += "&show_dialog=true"
-  url += "&scope=user-top-read user-library-read playlist-read-private playlist-read-collaborative playlist-modify-private"
+  url += "&scope=user-top-read user-library-read playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private"
   window.location.href = url // Show Spotify's authorization screen
 }
 
@@ -107,7 +107,7 @@ function fetchAccessToken(code) {
 // use refresh token to fetch new access token
 function refreshAccessToken() {
   refreshingAccessToken = true
-  refresh_token = localStorage.getItem("refresh_token")
+  refresh_token = localStorage.refresh_token
   var body = "grant_type=refresh_token"
   body += "&refresh_token=" + refresh_token
   body += "&client_id=" + client_id
@@ -190,35 +190,6 @@ function makeAPIRequest (method, endpoint, body) {
   });
 }
 
-// Chains multiple promisified API requests into one big promise
-// because limit is only 50 at a time
-// Used for getting all saved tracks and playlsit tracks
-function chainApiRequests(apiRequest, handler, index) {
-  return new Promise(function(resolve, reject) {
-    function oncomplete() {
-      resolve()
-    }
-    function onfailure() {
-      reject()
-    }
-    (function nextApiRequest(apiRequest, handler, offset) {
-      if(offset == undefined) {
-        offset = 0
-      }
-      apiRequest(offset, index).then((responseText) => {
-        if(handler(responseText)) {
-          offset += 50
-          nextApiRequest(apiRequest, handler, offset)
-        } else {
-          oncomplete()
-        }
-      }, () => {
-        onfailure()
-      })
-    })(apiRequest, handler)
-  })
-}
-
 /** API calls the website will make to gather user data */
 
 function testAccessToken() {
@@ -247,7 +218,7 @@ function handleUserProfileResponse(responseText) {
   localStorage.setItem("userProfile", JSON.stringify(userProfile))
 }
 
-function getTopListens(type, handler) {
+function getTopListens(type) {
   var queryParams = "?time_range=" + fetchPeriod
   queryParams += "&limit=50"
   queryParams += "&offset=0"

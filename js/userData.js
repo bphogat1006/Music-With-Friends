@@ -9,7 +9,7 @@ var playlistTracks = []
 var topArtists = {}
 var topTracks = {}
 
-var artistsRanked = []
+var artistsRanked = null
 var pointSystem = {
   savedTrack: 1,
   playlistTrack: 2,
@@ -28,13 +28,14 @@ var pointSystem = {
 var refreshData = false
 
 function getUserData() {
-  var userData = JSON.parse(localStorage.getItem("userData"))
-  // if userData from localStorage is empty, get user data
-  if(Object.keys(userData).length == 0 || refreshData) {
+  artistsRanked = JSON.parse(localStorage.artistsRanked)
+  // see if artistsRanked from localStorage is empty
+  if(artistsRanked.length == 0 || refreshData) {
+    artistsRanked = []
+    // if it is, calculate artistsRanked
     document.getElementById("progress-container").style.display = "block"
-
     // first get all saved tracks & artists
-    chainApiRequests(getTracks, handleTracksResponse)
+    chainApiRequests(getSavedTracks, handleSavedTracksResponse)
     // then get all user's playlists
     .then(() => {
       return chainApiRequests(getPlaylists, handlePlaylistsResponse)
@@ -83,83 +84,83 @@ function getUserData() {
     })
     .then((responseText) => {
       handleTopTracksResponse(responseText)
-
       document.getElementById("progress-container").style.display = "none"
+      rankArtistsAndTracks()
 
-      calculateFavoriteArtists()
-      // debugPointSystem()
+      // set artistsRanked in localStorage
+      localStorage.setItem("artistsRanked", JSON.stringify(artistsRanked))
 
-      // set userData in localStorage
-      localStorage.setItem("userData", JSON.stringify({
-        artistsRanked: artistsRanked,
-        // savedTracks: savedTracks,
-        // playlistTracks: playlistTracks,
-        // topArtists: topArtists,
-        // topTracks: topTracks
-      }))
+      handleUserData()
     })
   }
   else {
-    artistsRanked = userData.artistsRanked
-    // debugPointSystem()
-    // compareData()
+    handleUserData()
+  }
+
+  function handleUserData() {
+    debugPointSystem()
+    compareData()
   }
 }
 
 function downloadData() {
-  var userData = JSON.parse(localStorage.getItem("userData"))
+  var userProfile = JSON.parse(localStorage.userProfile)
   var data = {
-    id: userData.id,
-    name: userData.display_name,
-    topArtists: artistsRanked,
-    savedTracks: savedTracks
+    id: userProfile.id,
+    display_name: userProfile.display_name,
+    artistsRanked: artistsRanked
   }
+  console.log(data)
   uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(data))
   location.href = uriContent
 }
 
-function calculateFavoriteArtists() {
+function rankArtistsAndTracks() {
   // handle saved tracks
   savedTracks.forEach((item) => {
-    addPoints(item.track.artists[0].name, item.track.artists[0].id, pointSystem.savedTrack, "savedTrack")
+    addData(item.track, pointSystem.savedTrack, "savedTrack")
   })
 
   // handle playlist items
   playlistTracks.forEach((item) => {
-    addPoints(item.track.artists[0].name, item.track.artists[0].id, pointSystem.playlistTrack, "playlistTrack")
+    addData(item.track, pointSystem.playlistTrack, "playlistTrack")
   })
 
   // handle top artists
   topArtists.shortTerm.forEach((artist) => {
-    addPoints(artist.name, artist.id, pointSystem.topArtist.shortTerm, "topArtist")
+    addData(artist, pointSystem.topArtist.shortTerm, "topArtist")
   })
   topArtists.mediumTerm.forEach((artist) => {
-    addPoints(artist.name, artist.id, pointSystem.topArtist.mediumTerm, "topArtist")
+    addData(artist, pointSystem.topArtist.mediumTerm, "topArtist")
   })
   topArtists.longTerm.forEach((artist) => {
-    addPoints(artist.name, artist.id, pointSystem.topArtist.longTerm, "topArtist")
+    addData(artist, pointSystem.topArtist.longTerm, "topArtist")
   })
   
   // handle top tracks
   topTracks.shortTerm.forEach((track) => {
-    addPoints(track.artists[0].name, track.artists[0].id, pointSystem.topTrack.shortTerm, "topTrack")
+    addData(track, pointSystem.topTrack.shortTerm, "topTrack")
   })
   topTracks.mediumTerm.forEach((track) => {
-    addPoints(track.artists[0].name, track.artists[0].id, pointSystem.topTrack.mediumTerm, "topTrack")
+    addData(track, pointSystem.topTrack.mediumTerm, "topTrack")
   })
   topTracks.longTerm.forEach((track) => {
-    addPoints(track.artists[0].name, track.artists[0].id, pointSystem.topTrack.longTerm, "topTrack")
+    addData(track, pointSystem.topTrack.longTerm, "topTrack")
   })
 
-  sortArtists(artistsRanked)
+  // sort data
+  sortByPoints(artistsRanked)
+  artistsRanked.forEach((artist) => {
+    sortByPoints(artist.tracks)
+  })
 }
 
-function sortArtists(arr) {
+function sortByPoints(arr) {
   var n = arr.length, curr, j, tmp
   for(var i=1; i < n; i++) {
     curr = i
     for(j=i-1; j >= 0; j--) {
-      if(arr[curr].points.total > arr[j].points.total) {
+      if(arr[curr].points > arr[j].points) {
         tmp = arr[curr]
         arr[curr] = arr[j]
         arr[j] = tmp
@@ -169,57 +170,107 @@ function sortArtists(arr) {
   }
 }
 
-function addPoints(name, id, points, type) {
-  var exists = false
+function addData(item, points, type) {
+  var itemIsTrack = (type != "topArtist") ? true : false
+
+  // get vars
+  var trackURI = null
+  var artistID = null
+  var artistName = null
+  if(itemIsTrack) {
+    trackURI = item.uri
+    trackName = item.name
+    artistID = item.artists[0].id
+    artistName = item.artists[0].name
+  } else {
+    artistID = item.id
+    artistName = item.name
+  }
+
+  // see if artist is in artistsRanked already
+  var artistExists = false
   for(var artist of artistsRanked) {
-    if(artist.id === id) {
-      artist.points.total += points
+    // if so
+    if(artist.id === artistID) {
+      // add points
+      artist.points += points
+      // add points to its specific category (for debugging)
       switch (type) {
         case "savedTrack":
-          artist.points.savedTrack += points
+          artist.category.savedTrack += points
           break;
         case "playlistTrack":
-          artist.points.playlistTrack += points
+          artist.category.playlistTrack += points
           break;
         case "topArtist":
-          artist.points.topArtist += points
+          artist.category.topArtist += points
           break;
         case "topTrack":
-          artist.points.topTrack += points
+          artist.category.topTrack += points
           break;
       }
-      exists = true
+      // if item is a track, add to artist's tracks
+      if(itemIsTrack) {
+        var trackExists = false
+        for(var track of artist.tracks) {
+          if(track.uri == trackURI || track.name.includes(trackName) || trackName.includes(track.name)) {
+            track.points ++
+            trackExists = true
+            break
+          }
+        }
+        if(!trackExists) {
+          artist.tracks.push({
+            points: 1,
+            name: trackName,
+            uri: trackURI
+          })
+        }
+      }
+      // break
+      artistExists = true
       break
     }
   }
-  if(exists) return
-  var artist = {points: {}}
-  artist.name = name
-  artist.id = id
-  artist.points.total = points
-  artist.points.savedTrack = 0
-  artist.points.playlistTrack = 0
-  artist.points.topArtist = 0
-  artist.points.topTrack = 0
+  if(artistExists) return
+  // if artist doesn't exist in artistsRanked, create it
+  var artist = {}
+  artist.id = artistID
+  artist.name = artistName
+  artist.points = points
+  artist.category = {
+    savedTrack: 0,
+    playlistTrack: 0,
+    topArtist: 0,
+    topTrack: 0
+  }
   switch (type) {
     case "savedTrack":
-      artist.points.savedTrack = points
+      artist.category.savedTrack = points
       break;
     case "playlistTrack":
-      artist.points.playlistTrack = points
+      artist.category.playlistTrack = points
       break;
     case "topArtist":
-      artist.points.topArtist = points
+      artist.category.topArtist = points
       break;
     case "topTrack":
-      artist.points.topTrack = points
+      artist.category.topTrack = points
       break;
+  }
+  artist.tracks = []
+  if(itemIsTrack) {
+    artist.tracks.push({
+      points: 1,
+      name: trackName,
+      uri: trackURI
+    })
   }
   artistsRanked.push(artist)
 }
 
 function debugPointSystem() {
-  var max = artistsRanked[0].points.total
+  var max = artistsRanked[0].points
   var debugContainer = document.getElementById("debug-point-system")
   debugContainer.style.display = "block"
 
@@ -228,16 +279,16 @@ function debugPointSystem() {
     var points = null
     switch (type) {
       case "savedTrack":
-        points = artist.points.savedTrack
+        points = artist.category.savedTrack
         break;
       case "playlistTrack":
-        points = artist.points.playlistTrack
+        points = artist.category.playlistTrack
         break;
       case "topArtist":
-        points = artist.points.topArtist
+        points = artist.category.topArtist
         break;
       case "topTrack":
-        points = artist.points.topTrack
+        points = artist.category.topTrack
         break;
     }
     progress.setAttribute("class", "progress-bar "+"bg-"+bg)
@@ -270,14 +321,45 @@ function debugPointSystem() {
   })
 }
 
-function getTracks(offset) {
+// Chains multiple promisified API requests into one big promise
+// because limit is only 50 at a time
+// Used for getting all saved tracks and playlist tracks
+function chainApiRequests(apiRequest, handler, index) {
+  return new Promise(function(resolve, reject) {
+    function oncomplete() {
+      resolve()
+    }
+    function onfailure() {
+      reject()
+    }
+    (function nextApiRequest(apiRequest, handler, offset) {
+      if(offset == undefined) {
+        offset = 0
+      }
+      apiRequest(offset, index).then((responseText) => {
+        if(handler(responseText)) {
+          // if(savedTracks.length > 100 && playlistIDs.length==0) {oncomplete();return;} // make debugging quicker
+          offset += 50
+          if(index != undefined) offset += 50
+          nextApiRequest(apiRequest, handler, offset)
+        } else {
+          oncomplete()
+        }
+      }, () => {
+        onfailure()
+      })
+    })(apiRequest, handler)
+  })
+}
+
+function getSavedTracks(offset) {
   var queryParams = "?market=ES"
   queryParams += "&limit=50"
   queryParams += "&offset=" + offset
   return makeAPIRequest("GET", "https://api.spotify.com/v1/me/tracks"+queryParams, null)
 }
 
-function handleTracksResponse(responseText) {
+function handleSavedTracksResponse(responseText) {
   var data = JSON.parse(responseText)
   if(data.items.length == 0) {
     return false
@@ -342,8 +424,8 @@ function getAllPlaylistTracks(apiRequest, requestHandler) {
 function getPlaylistTracks(offset, index) {
   var playlistID = playlistIDs[index]
   var queryParams = "?market=ES"
-  queryParams += "&fields=items(track(name, artists))"
-  queryParams += "&limit=50"
+  queryParams += "&fields=items(track(name,artists,uri))"
+  queryParams += "&limit=100"
   queryParams += "&offset=" + offset
   return makeAPIRequest("GET", "https://api.spotify.com/v1/playlists/"+playlistID+"/tracks"+queryParams, null)
 }
