@@ -26,8 +26,8 @@
       <div id="user-data" class="row m-5">
 
         <div id="user-profile">
-          <div class="d-flex align-items-center">
-            <h1 id="display-name" class="display-1 me-4 mb-3">Hello, </h1>
+          <div class="d-flex align-items-center mb-3">
+            <h1 id="display-name" class="display-1 me-4">Hello, </h1>
             <img id="profile-picture" class="img-fluid rounded-pill">
           </div>
         </div>
@@ -41,6 +41,11 @@
 
         <div id="debug-point-system" class="container mb-3" style="display: none;">
           <button class="btn btn-primary mb-3" onclick="downloadData()">Download Data</button>
+        </div>
+
+        <div id="compare-data" class="container mb-3" style="display: none;">
+          <p class="display-6 mb-3">Click the button below to create a playlist of the music you and Bhavya have in common</p>
+          <button class="btn btn-primary mb-3" onclick="compareData()">Create Playlist</button>
         </div>
 
         <div id="top-listens-information" class="container">

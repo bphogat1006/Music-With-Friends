@@ -98,8 +98,9 @@ function getUserData() {
   }
 
   function handleUserData() {
-    debugPointSystem()
-    compareData()
+    document.getElementById("compare-data").style.display = "block"
+    // debugPointSystem()
+    // compareData()
   }
 }
 

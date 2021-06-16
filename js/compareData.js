@@ -2,7 +2,7 @@
 var friend = 'bhav'
 var friendData = null
 var mutualArtists = []
-var maxTracksPerArtist = 5
+var maxTracksPerArtist = 4
 var playlistID = null
 var tracksToAdd = []
 
@@ -39,7 +39,7 @@ function compareData() {
 }
 
 function findMutualArtists(mArtists, fArtists) {
-  var searchLimit = 150
+  var searchLimit = 200
   function search(query) {
     var result = {
       status: false,
