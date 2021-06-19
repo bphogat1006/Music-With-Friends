@@ -11,10 +11,10 @@
     <link href="style.css" rel="stylesheet">
   </head>
 
-  <body onload="onPageLoad()">
-    <div class="container">
+  <body onload="onPageLoad()" class="bg-secondary">
+    <div class="container bg-light p-5">
       
-      <div id="request-authorization" class="row my-5">
+      <div id="request-authorization" class="row mx-lg-5">
         <div class="d-flex align-items-center mb-4">
           <img id="website-thumbnail" src="img/favicon.png">
           <h1 class="display-1 ms-4">Music With Friends</h1>
@@ -23,19 +23,12 @@
         <input id="authenticate-button" class="btn btn-lg btn-primary" type="button" onclick="requestAuthorization()" value="Request Authorization"></input>
       </div>
       
-      <div id="user-data" class="row m-5">
+      <div id="user-data" class="row mx-lg-5">
 
-        <div id="user-profile">
-          <div class="d-flex align-items-center mb-3">
+        <div id="user-profile" class="mb-5">
+          <div class="d-flex align-items-center">
             <h1 id="display-name" class="display-1 me-4">Hello, </h1>
             <img id="profile-picture" class="img-fluid rounded-pill">
-          </div>
-        </div>
-
-        <div id="progress-container" class="container mb-3" style="display: none;">
-          <p id="progress-info"></p>
-          <div class="progress">
-            <div id="progress" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
           </div>
         </div>
 
@@ -43,12 +36,26 @@
           <button class="btn btn-primary mb-3" onclick="downloadData()">Download Data</button>
         </div>
 
-        <div id="compare-data" class="container mb-3" style="display: none;">
-          <p class="display-6 mb-3">Click the button below to create a playlist of the music you and Bhavya have in common</p>
-          <button class="btn btn-primary mb-3" onclick="compareData()">Create Playlist</button>
+        <div class="container p-lg-5 py-3 bg-white section">
+          <div id="progress-container" class="container mb-3" style="display: none;">
+            <p id="progress-info"></p>
+            <div class="progress">
+              <div id="progress" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
+            </div>
+          </div>
+          
+          <div id="compare-data" style="display: none;">
+            <p class="display-6 mb-3">Click the button below to create a playlist of some music you and Bhavya have in common.</p>
+            <button class="btn btn-primary" onclick="compareData()">Create Playlist</button>
+          </div>
+          <div id="creating-playlist" class="spinner-border text-primary mb-3" style="display: none;" role="status"></div>
+          <div id="playlist-created" style="display: none;">
+            <h2>Check Spotify, your playlist was created!</h2>
+            <a id="playlist-link" class="h4">Or click here to see it</a>
+          </div>
         </div>
 
-        <div id="top-listens-information" class="container">
+        <div id="top-listens-information" class="container p-lg-5 py-3 bg-white section">
           <div class="d-inline-flex align-items-center">
             <p class="display-6 me-3 mb-3">Here are your top artists and tracks.</p>
             <div id="loading-top-listens" class="spinner-border text-primary" role="status"></div>
@@ -60,14 +67,14 @@
             <option value="long_term">Long-Term</option>
           </select>
           
-          <div class="row">
+          <div id="top-listens" class="row">
             <div class="col">
-              <h3 class="p-2 text-center">Top Artists</h1>
-              <ul id="top-artists-list" class="list-group list-group-flush mx-3"></ul>
+              <h3 class="p-3 text-center">Top Artists</h1>
+              <ul id="top-artists-list" class="list-group list-group-flush"></ul>
             </div>
             <div class="col">
-              <h3 class="p-2 text-center">Top Tracks</h1>
-              <ul id="top-tracks-list" class="list-group list-group-flush mx-3"></ul>
+              <h3 class="p-3 text-center">Top Tracks</h1>
+              <ul id="top-tracks-list" class="list-group list-group-flush"></ul>
             </div>
           </div>
         </div>

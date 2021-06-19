@@ -99,6 +99,7 @@ function getUserData() {
 
   function handleUserData() {
     document.getElementById("compare-data").style.display = "block"
+    
     // debugPointSystem()
     // compareData()
   }
@@ -324,7 +325,7 @@ function debugPointSystem() {
 
 // Chains multiple promisified API requests into one big promise
 // because limit is only 50 at a time
-// Used for getting all saved tracks and playlist tracks
+// ex. Used for getting all saved tracks and playlist tracks
 function chainApiRequests(apiRequest, handler, index) {
   return new Promise(function(resolve, reject) {
     function oncomplete() {
@@ -338,7 +339,7 @@ function chainApiRequests(apiRequest, handler, index) {
         offset = 0
       }
       apiRequest(offset, index).then((responseText) => {
-        if(handler(responseText)) {
+        if(handler(responseText, offset)) {
           // if(savedTracks.length > 100 && playlistIDs.length==0) {oncomplete();return;} // make debugging quicker
           offset += 50
           if(index != undefined) offset += 50

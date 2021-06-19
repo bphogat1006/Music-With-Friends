@@ -240,14 +240,18 @@ function handleTopListensResponse(responseText) {
     thumbnail.setAttribute("height", "50em")
 
     if(type == "artists") {
-      thumbnail.setAttribute("src", item.images[0].url)
+      if(item.images[0] != undefined) {
+        thumbnail.setAttribute("src", item.images[0].url)
+      }
       li.appendChild(thumbnail)
       var artist = document.createElement("div")
       artist.innerHTML = item.name
       li.appendChild(artist)
     }
     else {
-      thumbnail.setAttribute("src", item.album.images[0].url)
+      if(item.album.images[0] != undefined) {
+        thumbnail.setAttribute("src", item.album.images[0].url)
+      }
       li.appendChild(thumbnail)
       var songInfo = document.createElement("div")
       songInfo.setAttribute("class", "")

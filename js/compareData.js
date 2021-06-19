@@ -2,11 +2,16 @@
 var friend = 'bhav'
 var friendData = null
 var mutualArtists = []
-var maxTracksPerArtist = 4
 var playlistID = null
 var tracksToAdd = []
+var maxTracksPerArtist = 5
+var maxTracks = 1000
+var artistSearchLimit = 1000
 
 function compareData() {
+  document.getElementById("compare-data").style.display = "none"
+  document.getElementById("creating-playlist").style.display = "block"
+  artistsRanked = JSON.parse(localStorage.artistsRanked)
   // get friend's data file
   fetch('data/'+friend)
   .then(response => response.json())
@@ -27,25 +32,28 @@ function compareData() {
   // then add all your mutual tracks to the playlist
   .then((responseText) => {
     playlistID = JSON.parse(responseText).id
-    
+    document.getElementById("playlist-link").setAttribute("href", "https://open.spotify.com/playlist/"+playlistID)
     mutualArtists.forEach((artist) => {
       artist.tracks.forEach((track) => {
         tracksToAdd.push(track.uri)
       })
     })
-    tracksToAdd.splice(100)
-    return addTracksToPlaylist()
+    tracksToAdd.splice(maxTracks)
+    return chainApiRequests(addTracksToPlaylist, handleAddTracksResponse)
+  })
+  .then(() => {
+    document.getElementById("creating-playlist").style.display = "none"
+    document.getElementById("playlist-created").style.display = "block"
   })
 }
 
 function findMutualArtists(mArtists, fArtists) {
-  var searchLimit = 200
   function search(query) {
     var result = {
       status: false,
       index: null
     }
-    for(var i=0; i < Math.min(fArtists.length, searchLimit); i++) {
+    for(var i=0; i < Math.min(fArtists.length, artistSearchLimit); i++) {
       if(fArtists[i].id == query) {
         result.status = true
         result.index = i
@@ -55,7 +63,7 @@ function findMutualArtists(mArtists, fArtists) {
     return result
   }
   var mutualArtists = []
-  for(var i=0; i < Math.min(mArtists.length, searchLimit); i++) {
+  for(var i=0; i < Math.min(mArtists.length, artistSearchLimit); i++) {
     var result = search(mArtists[i].id)
     if(result.status) {
       var artist = {
@@ -74,10 +82,10 @@ function findMutualArtists(mArtists, fArtists) {
               name: mTrack.name,
               uri: mTrack.uri
             })
+          } else {
           }
         }
       }
-      if(i==0) artist.tracks = []
       artist.tracks.splice(maxTracksPerArtist)
       sortByPoints(artist.tracks)
       mutualArtists.push(artist)
@@ -140,14 +148,20 @@ function createPlaylist() {
   var body = {
     name: "Songs for "+myName+' and '+friend,
     description: "",
-    public: false
+    public: true
   }
   return makeAPIRequest("POST", "https://api.spotify.com/v1/users/"+myID+"/playlists", body)
 }
 
-function addTracksToPlaylist() {
-  var body = {
-    uris: tracksToAdd
-  }
+function addTracksToPlaylist(offset) {
+  var tracks = tracksToAdd.slice(offset, offset+50)
+  var body = {uris: tracks}
   return makeAPIRequest("POST", "https://api.spotify.com/v1/playlists/"+playlistID+"/tracks", body)
+}
+
+function handleAddTracksResponse(responseText, offset) {
+  if(offset/50 == Math.floor((tracksToAdd.length-1)/50)) {
+    return false
+  }
+  return true
 }
