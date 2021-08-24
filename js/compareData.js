@@ -1,6 +1,5 @@
 
-var friend = 'bhav'
-var friendData = null
+var friend = null
 var mutualArtists = []
 var playlistID = null
 var tracksToAdd = []
@@ -8,18 +7,19 @@ var maxTracksPerArtist = 5
 var maxTracks = 1000
 var artistSearchLimit = 1000
 
-function compareData() {
+function compareData(user) {
+  friend = user
   document.getElementById("compare-data").style.display = "none"
   document.getElementById("creating-playlist").style.display = "block"
-  artistsRanked = JSON.parse(localStorage.artistsRanked)
   // get friend's data file
-  fetch('data/'+friend)
-  .then(response => response.json())
-  .then(jsonResponse => {
-    friendData = jsonResponse
+  fetchUserData(friend)
+  .then(responseText => {
+    responseText = responseText.replace('","timestamp"', ',"timestamp"')
+    responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
+    friendData = JSON.parse(responseText).artistsRanked
 
     // find mutual artists and tracks between you and your friend
-    mutualArtists = findMutualArtists(artistsRanked, friendData.artistsRanked)
+    mutualArtists = findMutualArtists(artistsRanked, friendData)
     // For mutual artists which have no mutual tracks,
     // fill in missing tracks by getting the artist's top tracks
     return getAllArtistTopTracks(getArtistTopTracks, handleArtistTopTracks)
@@ -62,7 +62,6 @@ function findMutualArtists(mArtists, fArtists) {
     }
     return result
   }
-  var mutualArtists = []
   for(var i=0; i < Math.min(mArtists.length, artistSearchLimit); i++) {
     var result = search(mArtists[i].id)
     if(result.status) {

@@ -29,20 +29,16 @@ function onPageLoad() {
     // otherwise use access token and API to get user data
     else {
       document.getElementById("user-data").style.display = 'block'
-
-      // make sure artistsRanked in localStorage is initialized
-      if(localStorage.artistsRanked == null) {
-        localStorage.setItem("artistsRanked", JSON.stringify([]))
-      }
       
       // see if access token is expired
+      // if so, refresh it
       testAccessToken()
       .catch((status) => {
         if(status==401) {return refreshAccessToken()}
       })
-      // if so, refresh it
       // then get user profile info
       .then((responseText) => {
+        // if access token was refreshed, handle it
         if(responseText != undefined && JSON.parse(responseText).access_token != undefined) {
           handleAuthorizationResponse(responseText)
         }
@@ -177,7 +173,7 @@ function makeAPIRequest (method, endpoint, body) {
       } else {
         var error = this.status + ": " + this.responseText
         console.log(error)
-        if(this.status != 401) alert(error)
+        if(this.status != 401) alert(error) // access token expired
         reject(this.status, this.responseText)
       }
     };
@@ -193,7 +189,7 @@ function makeAPIRequest (method, endpoint, body) {
 /** API calls the website will make to gather user data */
 
 function testAccessToken() {
-  return makeAPIRequest("GET", "https://api.spotify.com/v1/me", null)
+  return getUserProfile()
 }
 
 function getUserProfile() {

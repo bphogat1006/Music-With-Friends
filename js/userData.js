@@ -1,15 +1,19 @@
 
 /**
- * Calculate the top artists for a user by a point system
+ * This script calculates the top artists for a user by a point system
  */
 
 var savedTracks = []
 var playlistIDs = []
+var publicPlaylists = []
 var playlistTracks = []
 var topArtists = {}
 var topTracks = {}
 
+var username = null
 var artistsRanked = null
+var timestamp = null
+
 var pointSystem = {
   savedTrack: 1,
   playlistTrack: 2,
@@ -28,93 +32,182 @@ var pointSystem = {
 var refreshData = false
 
 function getUserData() {
-  artistsRanked = JSON.parse(localStorage.artistsRanked)
-  // see if artistsRanked from localStorage is empty
-  if(artistsRanked.length == 0 || refreshData) {
-    artistsRanked = []
-    // if it is, calculate artistsRanked
-    document.getElementById("progress-container").style.display = "block"
-    // first get all saved tracks & artists
-    chainApiRequests(getSavedTracks, handleSavedTracksResponse)
-    // then get all user's playlists
-    .then(() => {
-      return chainApiRequests(getPlaylists, handlePlaylistsResponse)
-    })
-    // then get all tracks from all playlists
-    .then(() => {
-      return getAllPlaylistTracks(getPlaylistTracks, handlePlaylistTracksResponse)
-    })
-    // then get top artists from each period
-    .then(() => {
-      fetchPeriod = "short_term"
-      document.getElementById("progress-info").innerHTML = "Getting Top Artists..."
-      return getTopListens("artists")
-    })
-    .then((responseText) => {
-      handleTopArtistsResponse(responseText)
-      document.getElementById("progress").style.width = "75%"
-      fetchPeriod = "medium_term"
-      return getTopListens("artists")
-    })
-    .then((responseText) => {
-      handleTopArtistsResponse(responseText)
-      document.getElementById("progress").style.width = "80%"
-      fetchPeriod = "long_term"
-      return getTopListens("artists")
-    })
-    // then get top tracks from each period
-    .then((responseText) => {
-      handleTopArtistsResponse(responseText)
-      document.getElementById("progress-info").innerHTML = "Getting Top Tracks..."
-      document.getElementById("progress").style.width = "85%"
-      fetchPeriod = "short_term"
-      return getTopListens("tracks")
-    })
-    .then((responseText) => {
-      handleTopTracksResponse(responseText)
-      document.getElementById("progress").style.width = "90%"
-      fetchPeriod = "medium_term"
-      return getTopListens("tracks")
-    })
-    .then((responseText) => {
-      handleTopTracksResponse(responseText)
-      document.getElementById("progress").style.width = "95%"
-      fetchPeriod = "long_term"
-      return getTopListens("tracks")
-    })
-    .then((responseText) => {
-      handleTopTracksResponse(responseText)
-      document.getElementById("progress-container").style.display = "none"
-      rankArtistsAndTracks()
+  // see if artistsRanked for user exists in database
+  username = JSON.parse(localStorage.userProfile).display_name
+  fetchUserData(username)
+  .then((responseText) => {
+    if(responseText === '' || refreshData) {
+      artistsRanked = []
+      // if it is, calculate artistsRanked
+      document.getElementById("progress-container").style.display = "block"
+      // first get all saved tracks & artists
+      chainApiRequests(getSavedTracks, handleSavedTracksResponse)
+      // then get all user's playlists
+      .then(() => {
+        return chainApiRequests(getPlaylists, handlePlaylistsResponse)
+      })
+      // then get all tracks from all playlists
+      .then(() => {
+        return getAllPlaylistTracks(getPlaylistTracks, handlePlaylistTracksResponse)
+      })
+      // then get top artists from each period
+      .then(() => {
+        fetchPeriod = "short_term"
+        document.getElementById("progress-info").innerHTML = "Getting Top Artists..."
+        return getTopListens("artists")
+      })
+      .then((responseText) => {
+        handleTopArtistsResponse(responseText)
+        document.getElementById("progress").style.width = "75%"
+        fetchPeriod = "medium_term"
+        return getTopListens("artists")
+      })
+      .then((responseText) => {
+        handleTopArtistsResponse(responseText)
+        document.getElementById("progress").style.width = "80%"
+        fetchPeriod = "long_term"
+        return getTopListens("artists")
+      })
+      // then get top tracks from each period
+      .then((responseText) => {
+        handleTopArtistsResponse(responseText)
+        document.getElementById("progress-info").innerHTML = "Getting Top Tracks..."
+        document.getElementById("progress").style.width = "85%"
+        fetchPeriod = "short_term"
+        return getTopListens("tracks")
+      })
+      .then((responseText) => {
+        handleTopTracksResponse(responseText)
+        document.getElementById("progress").style.width = "90%"
+        fetchPeriod = "medium_term"
+        return getTopListens("tracks")
+      })
+      .then((responseText) => {
+        handleTopTracksResponse(responseText)
+        document.getElementById("progress").style.width = "95%"
+        fetchPeriod = "long_term"
+        return getTopListens("tracks")
+      })
+      .then((responseText) => {
+        handleTopTracksResponse(responseText)
+        document.getElementById("progress-container").style.display = "none"
+        rankArtistsAndTracks()
 
-      // set artistsRanked in localStorage
-      localStorage.setItem("artistsRanked", JSON.stringify(artistsRanked))
+        // shrink data to sql MEDIUMTEXT char limit and post it
+        while(JSON.stringify(artistsRanked).length > 16000000) {
+          artistsRanked.splice(artistsRanked.length*0.75)
+        }
+        return postUserData()
+      })
+      .then((responseText) => {
+        handleUserData()
+      })
+    }
+    else {
+      handleUserData(responseText)
+    }
+  })
 
-      handleUserData()
-    })
-  }
-  else {
-    handleUserData()
-  }
-
-  function handleUserData() {
-    document.getElementById("compare-data").style.display = "block"
+  function handleUserData(responseText) {
+    fetchUserData(username)
+    .then((responseText) => {
+      responseText = responseText.replace('","timestamp"', ',"timestamp"')
+      responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
+      responseText = JSON.parse(responseText)
+      artistsRanked = responseText.artistsRanked
+      timestamp = responseText.timestamp
+      timestamp = timestamp.slice(0, 16)
+      timestamp = timestamp.replace(' ', ' at ')
+      document.getElementById("data-timestamp").innerHTML = "You Spotify data was last fetched on "+timestamp
     
-    // debugPointSystem()
-    // compareData()
+      return fetchAllUsers()
+    })
+    .then((responseText) => {
+      var users = responseText.split(', ')
+      users.pop()
+      var user = null
+      var userlist = document.getElementById("users")
+      userlist.innerHTML = ""
+      do {
+        user = users.shift()
+        var item = document.createElement("li")
+        item.innerHTML = '<a onclick="compareData(this.innerHTML)" class="dropdown-item">'+user+'</a>'
+        item.setAttribute("class", "dropdown-item")
+        userlist.appendChild(item)
+      } while (users.length !== 0);
+
+      document.getElementById("user-data-meta").style.display = "block"
+      document.getElementById("compare-data-container").style.display = "block"
+      // debugPHP()
+      // debugPointSystem()
+    })
   }
+}
+
+function refreshUserData() {
+  refreshData = true;
+  document.getElementById("progress").style.width = "0%"
+  document.getElementById("progress-container").style.display = "block"
+  document.getElementById("user-data-meta").style.display = "none"
+  document.getElementById("compare-data-container").style.display = "none"
+  getUserData()
 }
 
 function downloadData() {
   var userProfile = JSON.parse(localStorage.userProfile)
   var data = {
-    id: userProfile.id,
-    display_name: userProfile.display_name,
+    userId: userProfile.id,
+    displayName: userProfile.display_name,
     artistsRanked: artistsRanked
   }
   console.log(data)
   uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(data))
   location.href = uriContent
+}
+
+function makePHPrequest(method, endpoint, body) {
+  return new Promise(function (resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, endpoint);
+    xhr.send(JSON.stringify(body));
+    xhr.onload = function() {
+      document.getElementById("phpResponseText").innerHTML = this.responseText;
+      if (this.status == 200) {
+        resolve(this.responseText);
+      }
+      else {
+        var error = this.status + ": " + this.responseText
+        console.log(error)
+        alert(error)
+        reject(this.status, this.responseText)
+      }
+    };
+    xhr.onerror = function () {
+      var error = this.status + ": " + this.responseText
+      console.log(error)
+      alert(error)
+      reject(this.status, this.responseText)
+    };
+  });
+}
+
+function postUserData() {
+  var userProfile = JSON.parse(localStorage.userProfile)
+  var body = {
+    userId: userProfile.id,
+    displayName: userProfile.display_name,
+    artistsRanked: artistsRanked
+  }
+  return makePHPrequest("POST", "../php/postUserData.php", body)
+}
+
+function fetchUserData(username) {
+  username = {username: username}
+  return makePHPrequest("POST", "../php/fetchUserData.php", username)
+}
+
+function fetchAllUsers() {
+  return makePHPrequest("GET", "../php/fetchAllUsers.php")
 }
 
 function rankArtistsAndTracks() {
@@ -269,6 +362,10 @@ function addData(item, points, type) {
     })
   }
   artistsRanked.push(artist)
+}
+
+function debugPHP() {
+  document.getElementById("debug-php").style.display = 'block'
 }
 
 function debugPointSystem() {

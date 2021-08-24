@@ -32,10 +32,6 @@
           </div>
         </div>
 
-        <div id="debug-point-system" class="container mb-3" style="display: none;">
-          <button class="btn btn-primary mb-3" onclick="downloadData()">Download Data</button>
-        </div>
-
         <div class="container p-lg-5 py-3 bg-white section">
           <div id="progress-container" class="container mb-3" style="display: none;">
             <p id="progress-info"></p>
@@ -43,16 +39,39 @@
               <div id="progress" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
             </div>
           </div>
-          
-          <div id="compare-data" style="display: none;">
-            <p class="display-6 mb-3">Click the button below to create a playlist of some music you and Bhavya have in common.</p>
-            <button class="btn btn-primary" onclick="compareData()">Create Playlist</button>
+
+          <div id="user-data-meta" style="display: none;">
+            <p id="data-timestamp" class="display-6 mb-3"></p>
+            <p class="display-6 mb-3">Click below to refresh your data.</p>
+            <button class="btn btn-primary mb-3" onclick="refreshUserData()">Refresh Data</button>
           </div>
+        </div>
+
+        <div id="compare-data-container" class="container p-lg-5 py-3 bg-white section" style="display: none;">
+          <div id="compare-data">
+            <p class="display-6 mb-3">Click below to create a playlist of music you have in common with a friend!</p>
+            <p class="display-6 mb-3">Just tell them to log onto this website, then you will be able to see their username below.</p>
+            <div class="btn-group">
+              <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">List Users</button>
+              <ul class="dropdown-menu" id="users">
+              </ul>
+            </div>
+          </div>
+  
           <div id="creating-playlist" class="spinner-border text-primary mb-3" style="display: none;" role="status"></div>
           <div id="playlist-created" style="display: none;">
             <h2>Check Spotify, your playlist was created!</h2>
             <a id="playlist-link" class="h4">Or click here to see it</a>
           </div>
+        </div>
+
+        <div id="debug-php" class="container mb-3" style="display: none;">
+          <button class="btn btn-primary mb-3" onclick="fetchUserData('bphogat')">run php test</button>
+          <p id="phpResponseText"></p>
+        </div>
+
+        <div id="debug-point-system" class="container mb-3" style="display: none;">
+          <button class="btn btn-primary mb-3" onclick="downloadData()">Download Data</button>
         </div>
 
         <div id="top-listens-information" class="container p-lg-5 py-3 bg-white section">
@@ -82,6 +101,7 @@
       </div>
       
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
     <script id="credentials"></script>
     <script id="app"></script>
