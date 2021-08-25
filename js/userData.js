@@ -130,9 +130,15 @@ function getUserData() {
       userlist.innerHTML = ""
       do {
         user = users.shift()
-        var item = document.createElement("li")
-        item.innerHTML = '<a onclick="compareData(this.innerHTML)" class="dropdown-item">'+user+'</a>'
-        item.setAttribute("class", "dropdown-item")
+        var item = document.createElement("a")
+        item.onclick = () => {compareData(user)}
+        item.innerHTML = user
+        if(user === username) {
+          item.innerHTML += ' (self)'
+          item.setAttribute("class", "dropdown-item disabled")
+        } else {
+          item.setAttribute("class", "dropdown-item")
+        }
         userlist.appendChild(item)
       } while (users.length !== 0);
 
