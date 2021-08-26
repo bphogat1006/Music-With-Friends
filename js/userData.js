@@ -39,7 +39,7 @@ function getUserData() {
   .then((responseText) => {
     if(responseText === '' || refreshData) {
       artistsRanked = []
-      // if it is, calculate artistsRanked
+      // if it doesn't, calculate artistsRanked
       document.getElementById("progress-container").style.display = "block"
       // first get all saved tracks & artists
       chainApiRequests(getSavedTracks, handleSavedTracksResponse)
@@ -212,44 +212,41 @@ function handleFetchAllUsers(responseText) {
   var user = null
   var userlist = document.getElementById("users")
   userlist.innerHTML = ""
-  var count = 0
+  var count = -1
   do {
     user = users.shift()
     var item = document.createElement("a")
     item.onclick = createPlaylist
     item.innerHTML = user
-    if(user === username) {
-      continue
-    } else {
-      item.setAttribute("class", "user-list-item list-group-item list-group-item-action")
-      if(count >= maxUsersDisplayed) {
-        item.style.display = "none"
-      }
+    if(user === username) continue
+    item.setAttribute("class", "user-list-item list-group-item list-group-item-action")
+    count++
+    // alert(user+' '+count)
+    if(count >= maxUsersDisplayed) {
+      item.style.display = "none"
     }
     userlist.appendChild(item)
-    count++
-  } while (users.length !== 0);
-  if(count >= maxUsersDisplayed) {
-    var loadMore = document.createElement("a")
-    loadMore.innerHTML = "... click to load more users"
-    loadMore.onclick = loadMoreUsers
-    loadMore.setAttribute("class", "user-list-item list-group-item list-group-item-action")
-    userlist.appendChild(loadMore)
-  }
+  } while (users.length > 0);
+
+  var loadMore = document.createElement("a")
+  loadMore.setAttribute("class", "user-list-item list-group-item list-group-item-action")
+  loadMore.innerHTML = "... click to load more users"
+  loadMore.onclick = loadMoreUsers
+  if(count < maxUsersDisplayed) {loadMore.style.display = "none"}
+  userlist.appendChild(loadMore)
 
   document.getElementById("users-search").addEventListener('input', searchUsers);
   document.getElementById("user-data-meta").style.display = "block"
   document.getElementById("compare-data-container").style.display = "block"
-  document.getElementById("loading-user-data-meta").style.display = "none"
 }
 
 function searchUsers(e) {
-  var query = e.target.value
+  var query = e.target.value.toLowerCase()
   var users = Array.from(document.getElementsByClassName("user-list-item"))
   if(query === '') {
     maxUsersDisplayed = 6
     for(var i=0; i < users.length-1; i++) {
-      users[i].style.display = (i > maxUsersDisplayed) ? "none" : "block"
+      users[i].style.display = (i < maxUsersDisplayed) ? "block" : "none"
     }
     if(users.length-1 > maxUsersDisplayed) {
       users[users.length-1].style.display = "block"
@@ -257,7 +254,7 @@ function searchUsers(e) {
     return
   }
   for(var i=0; i < users.length-1; i++) {
-    var match = users[i].innerHTML.slice(0, query.length)
+    var match = users[i].innerHTML.slice(0, query.length).toLowerCase()
     if(match === query) {
       users[i].style.display = "block"
     } else {
@@ -270,9 +267,12 @@ function searchUsers(e) {
 function loadMoreUsers() {
   maxUsersDisplayed += 6
   var users = Array.from(document.getElementsByClassName("user-list-item"))
-  for(var i=0; i < maxUsersDisplayed && i < users.length; i++) {
+  var i = 0
+  for(i; i < maxUsersDisplayed && i < users.length-1; i++) {
     users[i].style.display = "block"
-    if(i == users.length-1) {users[users.length-1].style.display="none"}
+  }
+  if(i === users.length-1) {
+    users[i].style.display = "none"
   }
 }
 

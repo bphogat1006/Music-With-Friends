@@ -40,11 +40,11 @@
             </div>
           </div>
 
-          <div id="loading-user-data-meta" class="spinner-border text-primary" role="status"></div>
+          <div id="loading-user-data-meta" class="spinner-border text-primary" role="status" style="display: none;"></div>
           <div id="user-data-meta" style="display: none;">
             <p id="data-timestamp" class="display-6 mb-3"></p>
             <p class="display-6 mb-3">Click below to refresh your data.</p>
-            <button class="btn btn-primary" onclick="refreshUserData()">Refresh Data</button>
+            <button class="btn btn-lg btn-primary" onclick="refreshUserData()">Refresh Data</button>
           </div>
         </div>
 
@@ -54,7 +54,7 @@
             <p class="display-6 mb-3">Just tell them to log onto this website, then you will be able to see their username below.</p>
             <div class="border p-2 bg-light fs-5">
               <form class="mb-2">
-                <input id="users-search" type="search" class="form-control form-control-lg" autocomplete="false" placeholder="Type to search...">
+                <input id="users-search" type="search" class="form-control form-control-lg" autocomplete="off" placeholder="Type to search...">
               </form>
               <ul id="users" class="list-group"></ul>
             </div>
@@ -89,6 +89,10 @@
             <option value="medium_term" selected>Medium-Term</option>
             <option value="long_term">Long-Term</option>
           </select>
+
+          <div class="d-flex justify-content-center">
+            <img style="max-height: 50px;" src="img/spotify-branding-logo.png" alt="Spotify logo">
+          </div>
           
           <div id="top-listens" class="row">
             <div class="col-6">
