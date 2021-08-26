@@ -40,6 +40,7 @@
             </div>
           </div>
 
+          <div id="loading-user-data-meta" class="spinner-border text-primary" role="status"></div>
           <div id="user-data-meta" style="display: none;">
             <p id="data-timestamp" class="display-6 mb-3"></p>
             <p class="display-6 mb-3">Click below to refresh your data.</p>
@@ -51,11 +52,14 @@
           <div id="compare-data">
             <p class="display-6 mb-3">Click below to create a playlist of music you have in common with a friend!</p>
             <p class="display-6 mb-3">Just tell them to log onto this website, then you will be able to see their username below.</p>
-            <div class="btn-group">
-              <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">List Users</button>
-              <ul class="dropdown-menu" id="users">
-              </ul>
+            <div class="border p-2 bg-light fs-5">
+              <form class="mb-2">
+                <input id="users-search" type="search" class="form-control form-control-lg" autocomplete="false" placeholder="Type to search...">
+              </form>
+              <ul id="users" class="list-group"></ul>
             </div>
+
+            
           </div>
   
           <div id="creating-playlist" class="spinner-border text-primary mb-3" style="display: none;" role="status"></div>

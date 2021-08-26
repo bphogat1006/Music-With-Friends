@@ -30,6 +30,7 @@ var pointSystem = {
 }
 
 var refreshData = false
+var maxUsersDisplayed = 6
 
 function getUserData() {
   // see if artistsRanked for user exists in database
@@ -207,25 +208,72 @@ function handleFetchAllUsers(responseText) {
   }
   var users = responseText.split(', ')
   users.pop()
+  users.sort()
   var user = null
   var userlist = document.getElementById("users")
   userlist.innerHTML = ""
+  var count = 0
   do {
     user = users.shift()
     var item = document.createElement("a")
     item.onclick = createPlaylist
     item.innerHTML = user
     if(user === username) {
-      item.innerHTML += ' (self)'
-      item.setAttribute("class", "dropdown-item disabled")
+      continue
     } else {
-      item.setAttribute("class", "dropdown-item")
+      item.setAttribute("class", "user-list-item list-group-item list-group-item-action")
+      if(count >= maxUsersDisplayed) {
+        item.style.display = "none"
+      }
     }
     userlist.appendChild(item)
+    count++
   } while (users.length !== 0);
+  if(count >= maxUsersDisplayed) {
+    var loadMore = document.createElement("a")
+    loadMore.innerHTML = "... click to load more users"
+    loadMore.onclick = loadMoreUsers
+    loadMore.setAttribute("class", "user-list-item list-group-item list-group-item-action")
+    userlist.appendChild(loadMore)
+  }
 
+  document.getElementById("users-search").addEventListener('input', searchUsers);
   document.getElementById("user-data-meta").style.display = "block"
   document.getElementById("compare-data-container").style.display = "block"
+  document.getElementById("loading-user-data-meta").style.display = "none"
+}
+
+function searchUsers(e) {
+  var query = e.target.value
+  var users = Array.from(document.getElementsByClassName("user-list-item"))
+  if(query === '') {
+    maxUsersDisplayed = 6
+    for(var i=0; i < users.length-1; i++) {
+      users[i].style.display = (i > maxUsersDisplayed) ? "none" : "block"
+    }
+    if(users.length-1 > maxUsersDisplayed) {
+      users[users.length-1].style.display = "block"
+    }
+    return
+  }
+  for(var i=0; i < users.length-1; i++) {
+    var match = users[i].innerHTML.slice(0, query.length)
+    if(match === query) {
+      users[i].style.display = "block"
+    } else {
+      users[i].style.display = "none"
+    }
+  }
+  users[users.length-1].style.display = "none"
+}
+
+function loadMoreUsers() {
+  maxUsersDisplayed += 6
+  var users = Array.from(document.getElementsByClassName("user-list-item"))
+  for(var i=0; i < maxUsersDisplayed && i < users.length; i++) {
+    users[i].style.display = "block"
+    if(i == users.length-1) {users[users.length-1].style.display="none"}
+  }
 }
 
 function rankArtistsAndTracks() {
