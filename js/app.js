@@ -229,7 +229,7 @@ function handleTopListensResponse(responseText) {
 
   data.items.forEach(item => {
     var li = document.createElement("li")
-    li.setAttribute("class", "list-group-item d-flex align-items-center ps-0 ps-md-3")
+    li.setAttribute("class", "list-group-item d-flex align-items-center ps-0 ps-lg-3")
 
     var thumbnail = document.createElement("img")
     thumbnail.setAttribute("class", "me-3")
