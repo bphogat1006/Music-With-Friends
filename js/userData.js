@@ -194,7 +194,7 @@ function handleFetchUserData(responseText) {
   timestamp = responseText.timestamp
   timestamp = timestamp.slice(0, 16)
   timestamp = timestamp.replace(' ', ' at ')
-  document.getElementById("data-timestamp").innerHTML = "You Spotify data was last fetched on "+timestamp
+  document.getElementById("data-timestamp").innerHTML = "Your Spotify data was last fetched on "+timestamp
 }
 
 function fetchAllUsers() {

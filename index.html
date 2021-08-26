@@ -12,7 +12,7 @@
   </head>
 
   <body onload="onPageLoad()" class="bg-secondary">
-    <div class="container bg-light p-5">
+    <div class="container-md bg-light">
       
       <div id="request-authorization" class="row mx-lg-5">
         <div class="d-flex align-items-center mb-4">
@@ -32,7 +32,7 @@
           </div>
         </div>
 
-        <div class="container p-lg-5 py-3 bg-white section">
+        <div class="container p-3 p-lg-5 bg-white section">
           <div id="progress-container" class="container mb-3" style="display: none;">
             <p id="progress-info"></p>
             <div class="progress">
@@ -43,11 +43,11 @@
           <div id="user-data-meta" style="display: none;">
             <p id="data-timestamp" class="display-6 mb-3"></p>
             <p class="display-6 mb-3">Click below to refresh your data.</p>
-            <button class="btn btn-primary mb-3" onclick="refreshUserData()">Refresh Data</button>
+            <button class="btn btn-primary" onclick="refreshUserData()">Refresh Data</button>
           </div>
         </div>
 
-        <div id="compare-data-container" class="container p-lg-5 py-3 bg-white section" style="display: none;">
+        <div id="compare-data-container" class="container p-3 p-lg-5 bg-white section" style="display: none;">
           <div id="compare-data">
             <p class="display-6 mb-3">Click below to create a playlist of music you have in common with a friend!</p>
             <p class="display-6 mb-3">Just tell them to log onto this website, then you will be able to see their username below.</p>
@@ -87,11 +87,11 @@
           </select>
           
           <div id="top-listens" class="row">
-            <div class="col">
+            <div class="col-6">
               <h3 class="p-3 text-center">Top Artists</h1>
               <ul id="top-artists-list" class="list-group list-group-flush"></ul>
             </div>
-            <div class="col">
+            <div class="col-6">
               <h3 class="p-3 text-center">Top Tracks</h1>
               <ul id="top-tracks-list" class="list-group list-group-flush"></ul>
             </div>
