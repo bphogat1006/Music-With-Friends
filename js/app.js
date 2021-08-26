@@ -266,3 +266,9 @@ function handleTopListensResponse(responseText) {
     document.getElementById("loading-top-listens").style.display = "none"
   }
 }
+
+function logout() {
+  localStorage.clear();
+  location.reload();
+}
+
