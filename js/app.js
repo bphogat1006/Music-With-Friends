@@ -29,6 +29,7 @@ function onPageLoad() {
     // otherwise use access token and API to get user data
     else {
       document.getElementById("user-data").style.display = 'block'
+      document.getElementById("log-out").style.display = 'block'
       
       // see if access token is expired
       // if so, refresh it
