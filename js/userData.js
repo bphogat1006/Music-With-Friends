@@ -91,6 +91,7 @@ function getUserData() {
       .then((responseText) => {
         handleTopTracksResponse(responseText)
         document.getElementById("progress-container").style.display = "none"
+        // then rank artists based on music data collected
         rankArtistsAndTracks()
 
         // shrink data to sql MEDIUMTEXT char limit and post it
@@ -100,50 +101,23 @@ function getUserData() {
         return postUserData()
       })
       .then((responseText) => {
+        // console.log(responseText)
         handleUserData()
       })
     }
     else {
-      handleUserData(responseText)
+      handleUserData()
     }
   })
 
-  function handleUserData(responseText) {
+  function handleUserData() {
     fetchUserData(username)
     .then((responseText) => {
-      responseText = responseText.replace('","timestamp"', ',"timestamp"')
-      responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
-      responseText = JSON.parse(responseText)
-      artistsRanked = responseText.artistsRanked
-      timestamp = responseText.timestamp
-      timestamp = timestamp.slice(0, 16)
-      timestamp = timestamp.replace(' ', ' at ')
-      document.getElementById("data-timestamp").innerHTML = "You Spotify data was last fetched on "+timestamp
-    
+      handleFetchUserData(responseText)
       return fetchAllUsers()
     })
     .then((responseText) => {
-      var users = responseText.split(', ')
-      users.pop()
-      var user = null
-      var userlist = document.getElementById("users")
-      userlist.innerHTML = ""
-      do {
-        user = users.shift()
-        var item = document.createElement("a")
-        item.onclick = () => {compareData(user)}
-        item.innerHTML = user
-        if(user === username) {
-          item.innerHTML += ' (self)'
-          item.setAttribute("class", "dropdown-item disabled")
-        } else {
-          item.setAttribute("class", "dropdown-item")
-        }
-        userlist.appendChild(item)
-      } while (users.length !== 0);
-
-      document.getElementById("user-data-meta").style.display = "block"
-      document.getElementById("compare-data-container").style.display = "block"
+      handleFetchAllUsers(responseText)
       // debugPHP()
       // debugPointSystem()
     })
@@ -212,8 +186,46 @@ function fetchUserData(username) {
   return makePHPrequest("POST", "../php/fetchUserData.php", username)
 }
 
+function handleFetchUserData(responseText) {
+  responseText = responseText.replace('","timestamp"', ',"timestamp"')
+  responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
+  responseText = JSON.parse(responseText)
+  artistsRanked = responseText.artistsRanked
+  timestamp = responseText.timestamp
+  timestamp = timestamp.slice(0, 16)
+  timestamp = timestamp.replace(' ', ' at ')
+  document.getElementById("data-timestamp").innerHTML = "You Spotify data was last fetched on "+timestamp
+}
+
 function fetchAllUsers() {
   return makePHPrequest("GET", "../php/fetchAllUsers.php")
+}
+
+function handleFetchAllUsers(responseText) {
+  function createPlaylist() {
+    compareData(this.innerHTML)
+  }
+  var users = responseText.split(', ')
+  users.pop()
+  var user = null
+  var userlist = document.getElementById("users")
+  userlist.innerHTML = ""
+  do {
+    user = users.shift()
+    var item = document.createElement("a")
+    item.onclick = createPlaylist
+    item.innerHTML = user
+    if(user === username) {
+      item.innerHTML += ' (self)'
+      item.setAttribute("class", "dropdown-item disabled")
+    } else {
+      item.setAttribute("class", "dropdown-item")
+    }
+    userlist.appendChild(item)
+  } while (users.length !== 0);
+
+  document.getElementById("user-data-meta").style.display = "block"
+  document.getElementById("compare-data-container").style.display = "block"
 }
 
 function rankArtistsAndTracks() {
@@ -370,62 +382,6 @@ function addData(item, points, type) {
   artistsRanked.push(artist)
 }
 
-function debugPHP() {
-  document.getElementById("debug-php").style.display = 'block'
-}
-
-function debugPointSystem() {
-  var max = artistsRanked[0].points
-  var debugContainer = document.getElementById("debug-point-system")
-  debugContainer.style.display = "block"
-
-  function createProgressBar(artist, type, bg) {
-    var progress = document.createElement("div")
-    var points = null
-    switch (type) {
-      case "savedTrack":
-        points = artist.category.savedTrack
-        break;
-      case "playlistTrack":
-        points = artist.category.playlistTrack
-        break;
-      case "topArtist":
-        points = artist.category.topArtist
-        break;
-      case "topTrack":
-        points = artist.category.topTrack
-        break;
-    }
-    progress.setAttribute("class", "progress-bar "+"bg-"+bg)
-    if(points != 0) progress.innerHTML = type
-    else return progress
-    progress.style.width = points/max*100 + "%"
-    progress.innerHTML += ": " + points
-    return progress
-  }
-  artistsRanked.forEach((artist) => {
-    var progressContainer = document.createElement("div")
-    progressContainer.setAttribute("class", "progress")
-    progressContainer.appendChild(
-      createProgressBar(artist, "topArtist", "danger")
-    )
-    progressContainer.appendChild(
-      createProgressBar(artist, "topTrack", "info")
-    )
-    progressContainer.appendChild(
-      createProgressBar(artist, "savedTrack", "primary")
-    )
-    progressContainer.appendChild(
-      createProgressBar(artist, "playlistTrack", "success")
-    )
-    var name = document.createElement("p")
-    name.setAttribute("class", "m-0 p-0")
-    name.innerHTML = artist.name
-    debugContainer.appendChild(name)
-    debugContainer.appendChild(progressContainer)
-  })
-}
-
 // Chains multiple promisified API requests into one big promise
 // because limit is only 50 at a time
 // ex. Used for getting all saved tracks and playlist tracks
@@ -573,4 +529,60 @@ function handleTopTracksResponse(responseText) {
       topTracks.longTerm = data.items
       break;
   }
+}
+
+function debugPHP() {
+  document.getElementById("debug-php").style.display = 'block'
+}
+
+function debugPointSystem() {
+  var max = artistsRanked[0].points
+  var debugContainer = document.getElementById("debug-point-system")
+  debugContainer.style.display = "block"
+
+  function createProgressBar(artist, type, bg) {
+    var progress = document.createElement("div")
+    var points = null
+    switch (type) {
+      case "savedTrack":
+        points = artist.category.savedTrack
+        break;
+      case "playlistTrack":
+        points = artist.category.playlistTrack
+        break;
+      case "topArtist":
+        points = artist.category.topArtist
+        break;
+      case "topTrack":
+        points = artist.category.topTrack
+        break;
+    }
+    progress.setAttribute("class", "progress-bar "+"bg-"+bg)
+    if(points != 0) progress.innerHTML = type
+    else return progress
+    progress.style.width = points/max*100 + "%"
+    progress.innerHTML += ": " + points
+    return progress
+  }
+  artistsRanked.forEach((artist) => {
+    var progressContainer = document.createElement("div")
+    progressContainer.setAttribute("class", "progress")
+    progressContainer.appendChild(
+      createProgressBar(artist, "topArtist", "danger")
+    )
+    progressContainer.appendChild(
+      createProgressBar(artist, "topTrack", "info")
+    )
+    progressContainer.appendChild(
+      createProgressBar(artist, "savedTrack", "primary")
+    )
+    progressContainer.appendChild(
+      createProgressBar(artist, "playlistTrack", "success")
+    )
+    var name = document.createElement("p")
+    name.setAttribute("class", "m-0 p-0")
+    name.innerHTML = artist.name
+    debugContainer.appendChild(name)
+    debugContainer.appendChild(progressContainer)
+  })
 }
