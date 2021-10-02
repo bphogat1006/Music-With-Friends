@@ -309,10 +309,23 @@ function rankArtistsAndTracks() {
     addData(track, pointSystem.topTrack.longTerm, "topTrack")
   })
 
-  // sort data
+  // sort data by points
   sortByPoints(artistsRanked)
   artistsRanked.forEach((artist) => {
     sortByPoints(artist.tracks)
+  })
+
+  // normalize points for artists & their tracks
+  maxArtistPoints = artistsRanked[0].points
+  artistsRanked.forEach((artist) => {
+    // normalize artist points
+    artist.points /= maxArtistPoints
+    // normalize tracks' points
+    if(artist.tracks.length > 0)
+    maxTrackPoints = artist.tracks[0].points
+    artist.tracks.forEach((track) => {
+      track.points /= maxTrackPoints
+    })
   })
 }
 
@@ -494,8 +507,14 @@ function handlePlaylistsResponse(responseText) {
     return false
   }
   for(var playlist of data.items) {
+    // skip collab playlists
     if(playlist.collaborative) continue
-    if(playlist.owner.display_name != JSON.parse(localStorage.userProfile).display_name) continue
+    // skip playlists not made by user
+    var displayName = JSON.parse(localStorage.userProfile).display_name
+    if(playlist.owner.display_name != displayName) continue
+    // avoid scanning playlists made by Music With Friends (messes with algorithm)
+    var str = "Songs for "+displayName
+    if(playlist.name.slice(0, str.length) == str) continue
     playlistIDs.push(playlist.id)
   }
   if(data.items.length != 50) return false
@@ -584,7 +603,10 @@ function debugPHP() {
 }
 
 function debugPointSystem() {
-  var max = artistsRanked[0].points
+  var max = artistsRanked[0].category.savedTrack+
+      artistsRanked[0].category.playlistTrack+
+      artistsRanked[0].category.topArtist+
+      artistsRanked[0].category.topTrack
   var debugContainer = document.getElementById("debug-point-system")
   debugContainer.style.display = "block"
 
@@ -629,7 +651,7 @@ function debugPointSystem() {
     )
     var name = document.createElement("p")
     name.setAttribute("class", "m-0 p-0")
-    name.innerHTML = artist.name
+    name.innerHTML = artist.name+': '+Math.round(artist.points*max)
     debugContainer.appendChild(name)
     debugContainer.appendChild(progressContainer)
   })
