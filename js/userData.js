@@ -387,7 +387,7 @@ function addData(item, points, type) {
       if(itemIsTrack) {
         var trackExists = false
         for(var track of artist.tracks) {
-          if(track.uri == trackURI || track.name.includes(trackName) || trackName.includes(track.name)) {
+          if(track.uri == trackURI || ((track.name.includes("Remastered") || trackName.includes("Remastered")) && (track.name.includes(trackName) || trackName.includes(track.name)))) {
             track.points ++
             trackExists = true
             break
