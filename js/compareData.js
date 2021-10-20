@@ -19,7 +19,7 @@ function compareData(user) {
     friendData = JSON.parse(responseText).artistsRanked
 
     // find mutual artists and tracks between you and your friend
-    mutualArtists = findMutualArtists(artistsRanked, friendData)
+    mutualArtists = findMutualMusic(artistsRanked, friendData)
     // For mutual artists which have no mutual tracks,
     // fill in missing tracks by getting the artist's top tracks
     return getAllArtistTopTracks(getArtistTopTracks, handleArtistTopTracks)
@@ -47,7 +47,7 @@ function compareData(user) {
   })
 }
 
-function findMutualArtists(mArtists, fArtists) {
+function findMutualMusic(mArtists, fArtists) {
   function search(query) {
     var result = {
       status: false,
@@ -66,7 +66,7 @@ function findMutualArtists(mArtists, fArtists) {
     var result = search(mArtists[i].id)
     if(result.status) {
       var artist = {
-        points: i + result.index,
+        points: mArtists[i].points + fArtists[result.index].points,
         name: mArtists[i].name,
         id: mArtists[i].id,
         tracks: []
@@ -91,7 +91,6 @@ function findMutualArtists(mArtists, fArtists) {
     }
   }
   sortByPoints(mutualArtists)
-  mutualArtists.reverse()
   return mutualArtists
 }
 
