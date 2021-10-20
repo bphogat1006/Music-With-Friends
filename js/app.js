@@ -238,7 +238,8 @@ function handleTopListensResponse(responseText) {
 
     if(type == "artists") {
       if(item.images[0] != undefined) {
-        thumbnail.setAttribute("src", item.images[0].url)
+        var ind = Math.max(0, item.images.length-1)
+        thumbnail.setAttribute("src", item.images[ind].url)
       }
       li.appendChild(thumbnail)
       var artist = document.createElement("div")
@@ -247,7 +248,8 @@ function handleTopListensResponse(responseText) {
     }
     else {
       if(item.album.images[0] != undefined) {
-        thumbnail.setAttribute("src", item.album.images[0].url)
+        var ind = Math.max(0, item.album.images.length-1)
+        thumbnail.setAttribute("src", item.album.images[ind].url)
       }
       li.appendChild(thumbnail)
       var songInfo = document.createElement("div")
