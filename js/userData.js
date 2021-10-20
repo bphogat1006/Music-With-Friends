@@ -208,7 +208,9 @@ function handleFetchAllUsers(responseText) {
   }
   var users = responseText.split(', ')
   users.pop()
-  users.sort()
+  users.sort(function (a, b) {
+    return a.localeCompare(b, undefined, {'sensitivity': 'base'});
+  });
   var user = null
   var userlist = document.getElementById("users")
   userlist.innerHTML = ""
