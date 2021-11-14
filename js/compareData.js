@@ -1,50 +1,47 @@
 
 var friend = null
-var mutualArtists = []
+var mutualMusic = []
 var playlistID = null
 var tracksToAdd = []
 var maxTracksPerArtist = 5
 var maxTracks = 1000
 var artistSearchLimit = 1000
 
-function compareData(user) {
+async function compareData(user) {
   friend = user
   document.getElementById("compare-data").style.display = "none"
   document.getElementById("creating-playlist").style.display = "block"
-  // get friend's data file
-  fetchUserData(friend)
-  .then(responseText => {
-    responseText = responseText.replace('","timestamp"', ',"timestamp"')
-    responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
-    friendData = JSON.parse(responseText).artistsRanked
 
-    // find mutual artists and tracks between you and your friend
-    mutualArtists = findMutualMusic(artistsRanked, friendData)
-    // For mutual artists which have no mutual tracks,
-    // fill in missing tracks by getting the artist's top tracks
-    return getAllArtistTopTracks(getArtistTopTracks, handleArtistTopTracks)
-  })
+  // get friend's data file
+  var responseText = await fetchUserData(friend)
+  responseText = responseText.replace('","timestamp"', ',"timestamp"')
+  responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
+  friendData = JSON.parse(responseText).artistsRanked
+
+  // find mutual artists and tracks between you and your friend
+  mutualMusic = findMutualMusic(artistsRanked, friendData)
+
+  // For mutual artists which have no mutual tracks,
+  // fill in missing tracks by getting the artist's top tracks
+  responseText = await getAllArtistTopTracks(getArtistTopTracks, handleArtistTopTracks)
+
   // then create a playlist for you two
-  .then(() => {
-    console.log(mutualArtists)
-    return createPlaylist()
-  })
+  console.log("Mutual music:\n" + mutualMusic)
+  responseText = await createPlaylist()
+
   // then add all your mutual tracks to the playlist
-  .then((responseText) => {
-    playlistID = JSON.parse(responseText).id
-    document.getElementById("playlist-link").setAttribute("href", "https://open.spotify.com/playlist/"+playlistID)
-    mutualArtists.forEach((artist) => {
-      artist.tracks.forEach((track) => {
-        tracksToAdd.push(track.uri)
-      })
+  playlistID = JSON.parse(responseText).id
+  document.getElementById("playlist-link").setAttribute("href", "https://open.spotify.com/playlist/"+playlistID)
+  mutualMusic.forEach((artist) => {
+    artist.tracks.forEach((track) => {
+      tracksToAdd.push(track.uri)
     })
-    tracksToAdd.splice(maxTracks)
-    return chainApiRequests(addTracksToPlaylist, handleAddTracksResponse)
   })
-  .then(() => {
-    document.getElementById("creating-playlist").style.display = "none"
-    document.getElementById("playlist-created").style.display = "block"
-  })
+  tracksToAdd.splice(maxTracks)
+  await chainApiRequests(addTracksToPlaylist, handleAddTracksResponse)
+  
+  document.getElementById("creating-playlist").style.display = "none"
+  document.getElementById("playlist-created").style.display = "block"
 }
 
 function findMutualMusic(mArtists, fArtists) {
@@ -87,11 +84,11 @@ function findMutualMusic(mArtists, fArtists) {
       }
       artist.tracks.splice(maxTracksPerArtist)
       sortByPoints(artist.tracks)
-      mutualArtists.push(artist)
+      mutualMusic.push(artist)
     }
   }
-  sortByPoints(mutualArtists)
-  return mutualArtists
+  sortByPoints(mutualMusic)
+  return mutualMusic
 }
 
 function getAllArtistTopTracks(apiRequest, requestHandler) {
@@ -106,17 +103,17 @@ function getAllArtistTopTracks(apiRequest, requestHandler) {
       if(index == undefined) {
         index = 0
       }
-      while(index < mutualArtists.length && mutualArtists[index].tracks.length > 0) {
+      while(index < mutualMusic.length && mutualMusic[index].tracks.length > 0) {
         index++
       }
-      if(index == mutualArtists.length) {
+      if(index == mutualMusic.length) {
         oncomplete()
         return
       }
       apiRequest(index).then((responseText) => {
         requestHandler(responseText, index)
         index ++
-        if(index < mutualArtists.length) {
+        if(index < mutualMusic.length) {
           nextApiRequest(apiRequest, requestHandler, index)
         } else {
           oncomplete()
@@ -129,14 +126,14 @@ function getAllArtistTopTracks(apiRequest, requestHandler) {
 }
 
 function getArtistTopTracks(index) {
-  var artistID = mutualArtists[index].id
+  var artistID = mutualMusic[index].id
   var queryParams = "?market=ES"
   return makeAPIRequest("GET", "https://api.spotify.com/v1/artists/"+artistID+"/top-tracks"+queryParams, null)
 }
 
 function handleArtistTopTracks(responseText, index) {
   var data = JSON.parse(responseText)
-  mutualArtists[index].tracks = data.tracks.splice(0, maxTracksPerArtist)
+  mutualMusic[index].tracks = data.tracks.splice(0, maxTracksPerArtist)
 }
 
 function createPlaylist() {

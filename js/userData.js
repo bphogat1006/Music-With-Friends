@@ -32,97 +32,79 @@ var pointSystem = {
 var refreshData = false
 var maxUsersDisplayed = 6
 
-function getUserData() {
+async function getUserData() {
   // see if artistsRanked for user exists in database
   username = JSON.parse(localStorage.userProfile).display_name
-  fetchUserData(username)
-  .then((responseText) => {
-    if(responseText === '' || refreshData) {
-      artistsRanked = []
-      // if it doesn't, calculate artistsRanked
-      document.getElementById("progress-container").style.display = "block"
+  var response = await fetchUserData(username)
+  
+  // if it doesn't, calculate artistsRanked
+  if(response === '' || refreshData) {
+    artistsRanked = []
+    document.getElementById("progress-container").style.display = "block"
+
+    try {
       // first get all saved tracks & artists
-      chainApiRequests(getSavedTracks, handleSavedTracksResponse)
+      await chainApiRequests(getSavedTracks, handleSavedTracksResponse)
+
       // then get all user's playlists
-      .then(() => {
-        return chainApiRequests(getPlaylists, handlePlaylistsResponse)
-      })
+      await chainApiRequests(getPlaylists, handlePlaylistsResponse)
+
       // then get all tracks from all playlists
-      .then(() => {
-        return getAllPlaylistTracks(getPlaylistTracks, handlePlaylistTracksResponse)
-      })
+      await getAllPlaylistTracks(getPlaylistTracks, handlePlaylistTracksResponse)
+
       // then get top artists from each period
-      .then(() => {
-        fetchPeriod = "short_term"
-        document.getElementById("progress-info").innerHTML = "Getting Top Artists..."
-        return getTopListens("artists")
-      })
-      .then((responseText) => {
-        handleTopArtistsResponse(responseText)
-        document.getElementById("progress").style.width = "75%"
-        fetchPeriod = "medium_term"
-        return getTopListens("artists")
-      })
-      .then((responseText) => {
-        handleTopArtistsResponse(responseText)
-        document.getElementById("progress").style.width = "80%"
-        fetchPeriod = "long_term"
-        return getTopListens("artists")
-      })
+      document.getElementById("progress-info").innerHTML = "Getting Top Artists..."
+      fetchPeriod = "short_term"
+      response = await getTopListens("artists")
+      handleTopArtistsResponse(response)
+      document.getElementById("progress").style.width = "75%"
+
+      fetchPeriod = "medium_term"
+      response = await getTopListens("artists")
+      handleTopArtistsResponse(response)
+      document.getElementById("progress").style.width = "80%"
+      
+      fetchPeriod = "long_term"
+      response = await getTopListens("artists")
+      handleTopArtistsResponse(response)
+      document.getElementById("progress").style.width = "85%"
+
       // then get top tracks from each period
-      .then((responseText) => {
-        handleTopArtistsResponse(responseText)
-        document.getElementById("progress-info").innerHTML = "Getting Top Tracks..."
-        document.getElementById("progress").style.width = "85%"
-        fetchPeriod = "short_term"
-        return getTopListens("tracks")
-      })
-      .then((responseText) => {
-        handleTopTracksResponse(responseText)
-        document.getElementById("progress").style.width = "90%"
-        fetchPeriod = "medium_term"
-        return getTopListens("tracks")
-      })
-      .then((responseText) => {
-        handleTopTracksResponse(responseText)
-        document.getElementById("progress").style.width = "95%"
-        fetchPeriod = "long_term"
-        return getTopListens("tracks")
-      })
-      .then((responseText) => {
-        handleTopTracksResponse(responseText)
-        document.getElementById("progress-container").style.display = "none"
-        // then rank artists based on music data collected
-        rankArtistsAndTracks()
+      document.getElementById("progress-info").innerHTML = "Getting Top Tracks..."
+      fetchPeriod = "short_term"
+      response = await getTopListens("tracks")
+      handleTopTracksResponse(response)
+      document.getElementById("progress").style.width = "90%"
 
-        // shrink data to sql MEDIUMTEXT char limit and post it
-        while(JSON.stringify(artistsRanked).length > 16000000) {
-          artistsRanked.splice(artistsRanked.length*0.75)
-        }
-        return postUserData()
-      })
-      .then((responseText) => {
-        // console.log(responseText)
-        handleUserData()
-      })
-    }
-    else {
-      handleUserData()
-    }
-  })
+      fetchPeriod = "medium_term"
+      response = await getTopListens("tracks")
+      handleTopTracksResponse(response)
+      document.getElementById("progress").style.width = "95%"
 
-  function handleUserData() {
-    fetchUserData(username)
-    .then((responseText) => {
-      handleFetchUserData(responseText)
-      return fetchAllUsers()
-    })
-    .then((responseText) => {
-      handleFetchAllUsers(responseText)
-      // debugPHP()
-      // debugPointSystem()
-    })
+      fetchPeriod = "long_term"
+      response = await getTopListens("tracks")
+      handleTopTracksResponse(response)
+      document.getElementById("progress-container").style.display = "none"
+      
+      // then rank artists based on music data collected
+      rankArtistsAndTracks()
+
+      // shrink data to sql MEDIUMTEXT char limit and post it
+      while(JSON.stringify(artistsRanked).length > 16000000) {
+        artistsRanked.splice(artistsRanked.length*0.75)
+      }
+      await postUserData()
+    } catch (error) {
+      console.log("ERROR while getting user data\n" + error)
+    }
   }
+
+  response = await fetchUserData(username)
+  handleFetchUserData(response)
+  response = await fetchAllUsers()
+  handleFetchAllUsers(response)
+  // debugPHP()
+  // debugPointSystem()
 }
 
 function refreshUserData() {
@@ -448,7 +430,7 @@ function addData(item, points, type) {
 // Chains multiple promisified API requests into one big promise
 // because limit is only 50 at a time
 // ex. Used for getting all saved tracks and playlist tracks
-function chainApiRequests(apiRequest, handler, index) {
+async function chainApiRequests(apiRequest, handler, index) {
   return new Promise(function(resolve, reject) {
     function oncomplete() {
       resolve()
@@ -456,22 +438,22 @@ function chainApiRequests(apiRequest, handler, index) {
     function onfailure() {
       reject()
     }
-    (function nextApiRequest(apiRequest, handler, offset) {
+    (async function nextApiRequest(apiRequest, handler, offset) {
       if(offset == undefined) {
         offset = 0
       }
-      apiRequest(offset, index).then((responseText) => {
-        if(handler(responseText, offset)) {
-          // if(savedTracks.length > 100 && playlistIDs.length==0) {oncomplete();return;} // make debugging quicker
+      try {
+        var response = await apiRequest(offset, index)
+        if(handler(response, offset)) {
           offset += 50
           if(index != undefined) offset += 50
           nextApiRequest(apiRequest, handler, offset)
         } else {
           oncomplete()
         }
-      }, () => {
+      } catch {
         onfailure()
-      })
+      }
     })(apiRequest, handler)
   })
 }
@@ -523,7 +505,7 @@ function handlePlaylistsResponse(responseText) {
   return true
 }
 
-function getAllPlaylistTracks(apiRequest, requestHandler) {
+async function getAllPlaylistTracks(apiRequest, requestHandler) {
   return new Promise(function(resolve, reject) {
     function oncomplete() {
       resolve()
@@ -531,11 +513,12 @@ function getAllPlaylistTracks(apiRequest, requestHandler) {
     function onfailure() {
       reject()
     }
-    (function nextApiRequest(apiRequest, requestHandler, index) {
+    (async function nextApiRequest(apiRequest, requestHandler, index) {
       if(index == undefined) {
         index = 0
       }
-      chainApiRequests(apiRequest, requestHandler, index).then((responseText) => {
+      try {
+        await chainApiRequests(apiRequest, requestHandler, index)
         document.getElementById("progress-info").innerHTML = "Getting Tracks From Your Playlists..."
         document.getElementById("progress").style.width = 30+45*index/playlistIDs.length+"%"
         index ++
@@ -544,9 +527,9 @@ function getAllPlaylistTracks(apiRequest, requestHandler) {
         } else {
           oncomplete()
         }
-      }, () => {
+      } catch {
         onfailure()
-      })
+      }
     })(apiRequest, requestHandler)
   })
 }
