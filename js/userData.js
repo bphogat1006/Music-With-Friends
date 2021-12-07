@@ -99,10 +99,7 @@ async function getUserData() {
     }
   }
 
-  response = await fetchUserData(username)
-  handleFetchUserData(response)
-  response = await fetchAllUsers()
-  handleFetchAllUsers(response)
+  document.getElementById("compare-data-container").style.display = "block"
   // debugPHP()
   // debugPointSystem()
 }
@@ -186,7 +183,7 @@ function fetchAllUsers() {
 
 function handleFetchAllUsers(responseText) {
   function createPlaylist() {
-    compareData(this.innerHTML)
+    compareData()
   }
   var users = responseText.split(', ')
   users.pop()
