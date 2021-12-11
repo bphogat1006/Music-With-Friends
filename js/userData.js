@@ -29,7 +29,7 @@ var pointSystem = {
   }
 }
 
-var refreshData = false
+var refreshData = true
 var maxUsersDisplayed = 6
 
 async function getUserData() {
