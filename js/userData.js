@@ -36,6 +36,7 @@ async function getUserData() {
   // see if artistsRanked for user exists in database
   username = JSON.parse(localStorage.userProfile).display_name
   var response = await fetchUserData(username)
+  handleFetchUserData(response)
   
   // if it doesn't, calculate artistsRanked
   if(response === '' || refreshData) {
@@ -94,8 +95,11 @@ async function getUserData() {
         artistsRanked.splice(artistsRanked.length*0.75)
       }
       await postUserData()
-    } catch (error) {
-      console.log("ERROR while getting user data\n" + error)
+    }
+    catch (error) {
+      console.log("ERROR while getting user data")
+      console.log(error)
+      console.trace()
     }
   }
 

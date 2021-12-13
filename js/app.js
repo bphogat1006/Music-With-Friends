@@ -75,7 +75,7 @@ function requestAuthorization() {
   url += "&response_type=code"
   url += "&redirect_uri=" + encodeURI(redirect_uri)
   url += "&show_dialog=true"
-  url += "&scope=user-top-read user-library-read playlist-read-private playlist-read-collaborative playlist-modify-public"
+  url += "&scope=user-top-read user-library-read playlist-read-private playlist-read-collaborative playlist-modify-private"
   window.location.href = url // Show Spotify's authorization screen
 }
 
