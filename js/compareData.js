@@ -1,5 +1,5 @@
 
-var friend = 'bphogat'
+var friend = null
 var mutualMusic = []
 var playlistID = null
 var tracksToAdd = []
@@ -7,7 +7,8 @@ var maxTracksPerArtist = 5
 var maxTracks = 1000
 var artistSearchLimit = 1000
 
-async function compareData() {
+async function compareData(user) {
+  friend = user
   document.getElementById("compare-data").style.display = "none"
   document.getElementById("creating-playlist").style.display = "block"
 
