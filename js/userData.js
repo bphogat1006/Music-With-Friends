@@ -103,7 +103,8 @@ async function getUserData() {
     }
   }
 
-  document.getElementById("compare-data-container").style.display = "block"
+  response = await fetchAllUsers()
+  handleFetchAllUsers(response)
   // debugPHP()
   // debugPointSystem()
 }

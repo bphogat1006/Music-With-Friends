@@ -39,7 +39,7 @@ async function compareData() {
     })
     tracksToAdd.splice(maxTracks)
     await chainApiRequests(addTracksToPlaylist, handleAddTracksResponse)
-    
+  
     document.getElementById("creating-playlist").style.display = "none"
     document.getElementById("playlist-created").style.display = "block"
   }
