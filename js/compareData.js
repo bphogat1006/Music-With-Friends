@@ -1,16 +1,22 @@
 
 var friend = null
-var mutualMusic = []
+var mutualMusic
 var playlistID = null
-var tracksToAdd = []
+var tracksToAdd
 var maxTracksPerArtist = 5
 var maxTracks = 1000
 var artistSearchLimit = 1000
 
 async function compareData(user) {
   friend = user
+  mutualMusic = []
+  tracksToAdd = []
+  document.getElementById("playlist-created").style.display = "none"
   document.getElementById("compare-data").style.display = "none"
-  document.getElementById("creating-playlist").style.display = "block"
+  document.getElementById("refresh-user-data").setAttribute("disabled", "true")
+  document.getElementById("playlist-progress-container").style.display = "block"
+  document.getElementById("playlist-progress-info").innerHTML = "Creating playlist with "+friend
+  document.getElementById("playlist-progress").style.width = "0%"
 
   try {
     // get friend's data file
@@ -41,7 +47,6 @@ async function compareData(user) {
     tracksToAdd.splice(maxTracks)
     await chainApiRequests(addTracksToPlaylist, handleAddTracksResponse)
   
-    document.getElementById("creating-playlist").style.display = "none"
     document.getElementById("playlist-created").style.display = "block"
   }
   catch (error) {
@@ -49,6 +54,9 @@ async function compareData(user) {
     console.log(error)
     console.trace()
   }
+  document.getElementById("compare-data").style.display = "block"
+  document.getElementById("refresh-user-data").setAttribute("disabled", "false")
+  document.getElementById("playlist-progress-container").style.display = "none"
 }
 
 function findMutualMusic(mArtists, fArtists) {
@@ -117,6 +125,8 @@ function getAllArtistTopTracks(apiRequest, requestHandler) {
         oncomplete()
         return
       }
+      var progress = Math.round(index / mutualMusic.length * 30)
+      document.getElementById("playlist-progress").style.width = progress+"%"
       apiRequest(index).then((responseText) => {
         requestHandler(responseText, index)
         index ++
@@ -163,6 +173,8 @@ function createPlaylist() {
 }
 
 function addTracksToPlaylist(offset) {
+  var progress = Math.round(Math.min(offset+ / tracksToAdd.length, 1)*70)+30
+  document.getElementById("playlist-progress").style.width = progress+"%"
   var tracks = tracksToAdd.slice(offset, offset+50)
   var body = {uris: tracks}
   return makeAPIRequest("POST", "https://api.spotify.com/v1/playlists/"+playlistID+"/tracks", body)

@@ -55,12 +55,17 @@
             </div>
           </div>
 
-          <div id="loading-user-data-meta" class="spinner-border text-primary" role="status" style="display: none;"></div>
+          <div id="loading-user-data-meta" class="spinner-border text-primary" role="status"></div>
           <div id="user-data-meta" style="display: none;">
             <p id="data-timestamp" class="display-6 mb-3"></p>
             <p class="display-6 mb-3">Click below to refresh your data.</p>
-            <button class="btn btn-lg btn-primary" onclick="refreshUserData()">Refresh Data</button>
+            <button id="refresh-user-data" class="btn btn-lg btn-primary" onclick="refreshUserData()">Refresh Data</button>
           </div>
+        </div>
+
+        <div class="container p-4 p-lg-5 bg-white section" id="playlist-created" style="display: none;">
+          <h2>Check Spotify, your playlist was created!</h2>
+            <a id="playlist-link" class="h4">Or click here to see it</a>
         </div>
 
         <div id="compare-data-container" class="container p-4 p-lg-5 bg-white section" style="display: none;">
@@ -73,14 +78,13 @@
               </form>
               <ul id="users" class="list-group"></ul>
             </div>
-
-            
           </div>
   
-          <div id="creating-playlist" class="spinner-border text-primary mb-3" style="display: none;" role="status"></div>
-          <div id="playlist-created" style="display: none;">
-            <h2>Check Spotify, your playlist was created!</h2>
-            <a id="playlist-link" class="h4">Or click here to see it</a>
+          <div id="playlist-progress-container" class="container mb-3" style="display: none;">
+            <p id="playlist-progress-info"></p>
+            <div class="progress">
+              <div id="playlist-progress" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
+            </div>
           </div>
         </div>
 

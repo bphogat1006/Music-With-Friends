@@ -180,6 +180,7 @@
    timestamp = timestamp.slice(0, 16)
    timestamp = timestamp.replace(' ', ' at ')
    document.getElementById("data-timestamp").innerHTML = "Your Spotify data was last fetched on "+timestamp
+   document.getElementById("loading-user-data-meta").style.display = "none"
  }
  
  function fetchAllUsers() {
@@ -188,6 +189,7 @@
  
  function handleFetchAllUsers(responseText) {
    function createPlaylist() {
+     console.log("Creating playlist with "+this.innerHTML)
      compareData(this.innerHTML)
    }
    var users = responseText.split(', ')
