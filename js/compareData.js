@@ -156,7 +156,7 @@ function createPlaylist() {
   var body = {
     name: "Songs for "+myName+' and '+friend,
     description: "A playlist of all the music you two have in common with each other (as of "+today+")",
-    public: false
+    public: true
   }
   return makeAPIRequest("POST", "https://api.spotify.com/v1/users/"+myID+"/playlists", body)
 }
