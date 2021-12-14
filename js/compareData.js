@@ -55,7 +55,7 @@ async function compareData(user) {
     console.trace()
   }
   document.getElementById("compare-data").style.display = "block"
-  document.getElementById("refresh-user-data").setAttribute("disabled", "false")
+  document.getElementById("refresh-user-data").removeAttribute("disabled")
   document.getElementById("playlist-progress-container").style.display = "none"
 }
 
