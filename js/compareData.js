@@ -173,7 +173,7 @@ function createPlaylist() {
 }
 
 function addTracksToPlaylist(offset) {
-  var progress = Math.round(Math.min(offset+ / tracksToAdd.length, 1)*70)+30
+  var progress = Math.round(Math.min(offset+50 / tracksToAdd.length, 1)*70)+30
   document.getElementById("playlist-progress").style.width = progress+"%"
   var tracks = tracksToAdd.slice(offset, offset+50)
   var body = {uris: tracks}
