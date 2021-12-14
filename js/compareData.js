@@ -125,7 +125,7 @@ function getAllArtistTopTracks(apiRequest, requestHandler) {
         oncomplete()
         return
       }
-      var progress = Math.round(index / mutualMusic.length * 30)
+      var progress = Math.round(index / mutualMusic.length * 50)
       document.getElementById("playlist-progress").style.width = progress+"%"
       apiRequest(index).then((responseText) => {
         requestHandler(responseText, index)
@@ -173,8 +173,9 @@ function createPlaylist() {
 }
 
 function addTracksToPlaylist(offset) {
-  var progress = Math.round(Math.min(offset+50 / tracksToAdd.length, 1)*70)+30
+  var progress = Math.round( Math.min( (offset+50)/tracksToAdd.length, 1 ) * 50 ) + 50
   document.getElementById("playlist-progress").style.width = progress+"%"
+  console.log(progress)
   var tracks = tracksToAdd.slice(offset, offset+50)
   var body = {uris: tracks}
   return makeAPIRequest("POST", "https://api.spotify.com/v1/playlists/"+playlistID+"/tracks", body)
