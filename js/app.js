@@ -66,6 +66,10 @@ function onPageLoad() {
 
 // Show spotify authorization dialog when authorization button is pressed
 function requestAuthorization() {
+  if(!document.getElementById("consent").checked) {
+    alert("Before continuing, please indicate that you agree with the consent statement by ticking the checkbox.");
+    return;
+  }
   var url = AUTHORIZE
   url += "?client_id=" + client_id
   url += "&response_type=code"

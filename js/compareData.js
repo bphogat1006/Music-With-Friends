@@ -12,36 +12,43 @@ async function compareData(user) {
   document.getElementById("compare-data").style.display = "none"
   document.getElementById("creating-playlist").style.display = "block"
 
-  // get friend's data file
-  var responseText = await fetchUserData(friend)
-  responseText = responseText.replace('","timestamp"', ',"timestamp"')
-  responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
-  friendData = JSON.parse(responseText).artistsRanked
+  try {
+    // get friend's data file
+    var responseText = await fetchUserData(friend)
+    responseText = responseText.replace('","timestamp"', ',"timestamp"')
+    responseText = responseText.replace('"artistsRanked":"[', '"artistsRanked":[')
+    friendData = JSON.parse(responseText).artistsRanked
 
-  // find mutual artists and tracks between you and your friend
-  mutualMusic = findMutualMusic(artistsRanked, friendData)
+    // find mutual artists and tracks between you and your friend
+    mutualMusic = findMutualMusic(artistsRanked, friendData)
 
-  // For mutual artists which have no mutual tracks,
-  // fill in missing tracks by getting the artist's top tracks
-  responseText = await getAllArtistTopTracks(getArtistTopTracks, handleArtistTopTracks)
+    // For mutual artists which have no mutual tracks,
+    // fill in missing tracks by getting the artist's top tracks
+    responseText = await getAllArtistTopTracks(getArtistTopTracks, handleArtistTopTracks)
 
-  // then create a playlist for you two
-  console.log("Mutual music:\n" + mutualMusic)
-  responseText = await createPlaylist()
+    // then create a playlist for you two
+    console.log("Mutual music:\n" + mutualMusic)
+    responseText = await createPlaylist()
 
-  // then add all your mutual tracks to the playlist
-  playlistID = JSON.parse(responseText).id
-  document.getElementById("playlist-link").setAttribute("href", "https://open.spotify.com/playlist/"+playlistID)
-  mutualMusic.forEach((artist) => {
-    artist.tracks.forEach((track) => {
-      tracksToAdd.push(track.uri)
+    // then add all your mutual tracks to the playlist
+    playlistID = JSON.parse(responseText).id
+    document.getElementById("playlist-link").setAttribute("href", "https://open.spotify.com/playlist/"+playlistID)
+    mutualMusic.forEach((artist) => {
+      artist.tracks.forEach((track) => {
+        tracksToAdd.push(track.uri)
+      })
     })
-  })
-  tracksToAdd.splice(maxTracks)
-  await chainApiRequests(addTracksToPlaylist, handleAddTracksResponse)
+    tracksToAdd.splice(maxTracks)
+    await chainApiRequests(addTracksToPlaylist, handleAddTracksResponse)
   
-  document.getElementById("creating-playlist").style.display = "none"
-  document.getElementById("playlist-created").style.display = "block"
+    document.getElementById("creating-playlist").style.display = "none"
+    document.getElementById("playlist-created").style.display = "block"
+  }
+  catch (error) {
+    console.log("ERROR while getting user data")
+    console.log(error)
+    console.trace()
+  }
 }
 
 function findMutualMusic(mArtists, fArtists) {
@@ -140,9 +147,16 @@ function createPlaylist() {
   var myProfile = JSON.parse(localStorage.getItem("userProfile"))
   var myName = myProfile.display_name
   var myID = myProfile.id
+
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+  var yyyy = today.getFullYear();
+  today = mm + '/' + dd + '/' + yyyy;
+
   var body = {
     name: "Songs for "+myName+' and '+friend,
-    description: "",
+    description: "A playlist of all the music you two have in common with each other (as of "+today+")",
     public: true
   }
   return makeAPIRequest("POST", "https://api.spotify.com/v1/users/"+myID+"/playlists", body)
