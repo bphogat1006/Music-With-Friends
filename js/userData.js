@@ -34,7 +34,7 @@
  
  async function getUserData() {
    // see if artistsRanked for user exists in database
-   username = JSON.parse(localStorage.userProfile).display_name
+   username = JSON.parse(localStorage.userProfile).user_id
    var response = await fetchUserData(username)
    handleFetchUserData(response)
    
@@ -101,6 +101,8 @@
        console.log(error)
        console.trace()
      }
+   } else {
+     await updateUserDisplayName()
    }
  
    response = await fetchAllUsers()
@@ -121,7 +123,7 @@
  function downloadData() {
    var userProfile = JSON.parse(localStorage.userProfile)
    var data = {
-     userId: userProfile.id,
+     userId: userProfile.user_id,
      displayName: userProfile.display_name,
      artistsRanked: artistsRanked
    }
@@ -159,16 +161,25 @@
  function postUserData() {
    var userProfile = JSON.parse(localStorage.userProfile)
    var body = {
-     userId: userProfile.id,
+     userId: userProfile.user_id,
      displayName: userProfile.display_name,
      artistsRanked: artistsRanked
    }
    return makePHPrequest("POST", "../php/postUserData.php", body)
  }
+
+ function updateUserDisplayName() {
+   var userProfile = JSON.parse(localStorage.userProfile)
+   var body = {
+     userId: userProfile.user_id,
+     displayName: userProfile.display_name
+   }
+   return makePHPrequest("POST", "../php/updateUserDisplayName.php", body)
+ }
  
  function fetchUserData(username) {
-   username = {username: username}
-   return makePHPrequest("POST", "../php/fetchUserData.php", username)
+   body = {username: username}
+   return makePHPrequest("POST", "../php/fetchUserData.php", body)
  }
  
  function handleFetchUserData(responseText) {

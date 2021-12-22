@@ -207,7 +207,7 @@ function handleUserProfileResponse(responseText) {
   var userProfile = {
     display_name: data.display_name,
     profile_picture: null,
-    id: data.id
+    user_id: data.id
   }
   if(data.images[0] == undefined) {
     document.getElementById("profile-picture").setAttribute("src", "img/defaultProfilePicture.jpg")
