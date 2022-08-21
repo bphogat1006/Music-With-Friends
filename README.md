@@ -1,39 +1,38 @@
-# Music With Friends
+# create-svelte
 
-This website allows you and your friends to see what music you have in common with each other. This was created using the Spotify API, so you must have a Spotify account in order to use it (Premium is not required).
+Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
 
-## How it works
+## Creating a project
 
-### Sign in
+If you're seeing this, you've probably already done this step. Congrats!
 
-Upon navigating to the site, you will be asked to sign in with your Spotify account before proceeding. After authorization is granted, you will be directed to the main page.
+```bash
+# create a new project in the current directory
+npm create svelte@latest
 
-Music With Friends will immediately start scanning your library (liked tracks, public playlists, private playlists). This may take a while depending on the size of your library.
+# create a new project in my-app
+npm create svelte@latest my-app
+```
 
-### View listening statistics
+## Developing
 
-In the meantime, you may scroll down to view your top favorite artists and tracks for the "short-term," "medium-term," and "long-term" time ranges. Each list will contain up to 50 artists/tracks, depending on your listening.
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
-### Compare with friends
+```bash
+npm run dev
 
-Upon completion of the library scan, an algorithm determines which artists are your favorite. It ranks each artist you listen to and compiles the list which is stored for later use.
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
+```
 
-Then a list other Spotify users who have been on the website will appear. You may either pick from the dropdown or search for a specific user by their Spotify display name.
+## Building
 
-When you click on a friend's name, Music With Friends will compare both of your data and start creating a playlist of all* the artists and songs you both have in common. A link to the completed playlist will appear, and it will also be saved into your library automatically for easy access.
+To create a production version of your app:
 
-_*Limited to 5 tracks per artists, and 1000 tracks total._
+```bash
+npm run build
+```
 
-## Usage & Demo
+You can preview the production build with `npm run preview`.
 
-Spotify refuses to grant Music With Friends a quota extension because it analyzes each user's library to determine their favorite artists, which violates the TOS. Unfortunately, this is not something I can fix because that is the entire purpose of the site. A quota extension would allow anyone on the web with a Spotify account to use the website freely - but until I can get it approved, I must manually add your Spotify email address if you wish to use the website. See the contact info below if you are interested in trying out Music With Friends.
-
-[-- Video Demo --](https://drive.google.com/file/d/1698InJGdK2mevuegleVhBd1moe7frKZt/view?usp=sharing)
-
-## Author
-
-**Bhavya Phogat**
-
-Email: <b.phogat1925@gmail.com>
-
-Please reach out to me if you'd like to use the website! I need to manually add Spotify user's until I obtain Spotify's approval  of Music With Friends. Thank you!
+> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
