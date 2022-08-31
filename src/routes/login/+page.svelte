@@ -10,19 +10,19 @@
         if (queryString.length) {
             const urlParams = new URLSearchParams(queryString);
             if (urlParams.has('code')) {
-                promise = loadData(urlParams.get('code'))
+                promise = handleRedirect(urlParams.get('code'))
             } else if (urlParams.has('error')) {
                 const error = urlParams.get('error')
                 throw new Error(error)
             } else {
-                throw new Error('Something went wrong in loadData while parsing query string')
+                throw new Error('Something went wrong in handleRedirect while parsing query string')
             }
         } else {
             redirected = false
         }
     })
 
-    async function loadData(code) {
+    async function handleRedirect(code) {
         window.history.pushState("", "", PUBLIC_REDIRECT_URI); // remove param from url
         // make authorization request
         const authorizationResponse = await fetch("/login/authorize", {
@@ -36,7 +36,6 @@
         }
         window.location.href = '/'
     }
-
 
     function requestAuthorization() {
         let url = 'https://accounts.spotify.com/authorize?'

@@ -13,7 +13,7 @@ export async function POST({request}) {
             code: authCode,
             redirect_uri: PUBLIC_REDIRECT_URI,
         }).toString()
-        const authUrl = PUBLIC_SPOTIFY_ACCOUNT_URI + '/api/token'
+        const tokenUrl = PUBLIC_SPOTIFY_ACCOUNT_URI + '/api/token'
         const auth = 'Basic ' + Buffer.from(`${PUBLIC_CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')
         const fetchOptions = {
             method: 'POST',
@@ -24,7 +24,7 @@ export async function POST({request}) {
             }
         }
         // fetch token data
-        const response = await fetch(authUrl, fetchOptions)
+        const response = await fetch(tokenUrl, fetchOptions)
         // handle response
         if (!response.ok) {
             const err = await response.json()
