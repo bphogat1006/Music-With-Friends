@@ -9,23 +9,29 @@ const pool = createPool({
     idleTimeout: 5,
     database: 'music_with_friends'
 });
-export async function query(query) {
+export async function query(query, log = false) {
     let conn;
     try {
         conn = await pool.getConnection();
-        console.log('CONNECTED to db, thread_id='+conn.threadId)
-        console.log('QUERY:')
-        console.log(query)
+        if (log) {
+            console.log('CONNECTED to db, thread_id=' + conn.threadId)
+            console.log('QUERY:')
+            console.log(query.slice(0, 100)+' ...')
+        }
         const res = await conn.query(query);
-        console.log('RESULT:')
-        console.log(res)
+        if (log) {
+            console.log('RESULT:')
+            console.log(res)
+        }
         return res;
     } catch (err) {
-        console.log('ERROR:');
-        console.log(err);
+        if (log) {
+            console.log('ERROR:');
+            console.log(err);
+        }
         throw err;
     } finally {
-        console.log("RELEASING conn" + conn.threadId);
+        if (log) console.log("RELEASING conn" + conn.threadId);
         if (conn) {
             conn.release()
         }

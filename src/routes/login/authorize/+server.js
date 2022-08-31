@@ -67,7 +67,7 @@ export async function POST({request}) {
     if (queryResult.length === 0) {
         await query(`insert into users values ('${id}', '${display_name}', '${access_token}', '${refresh_token}', '${session_id}')`)
     } else {
-        await query (`update users set display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', session_id='${session_id}' where id='${id}'`)
+        await query(`update users set display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', session_id='${session_id}' where id='${id}'`)
     }
 
     const maxAge = 2*365*24*60*60 // 2 years
