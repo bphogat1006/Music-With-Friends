@@ -7,7 +7,7 @@ import { error } from '@sveltejs/kit';
 export async function POST({request}) {
     // set fetch params
     const session_id = await request.text()
-    const {refresh_token} = await query(`select refresh_token from users where session_id='${session_id}'`)[0]
+    const {refresh_token} = (await query(`select refresh_token from users where session_id='${session_id}'`))[0]
     const requestParameters = new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token
