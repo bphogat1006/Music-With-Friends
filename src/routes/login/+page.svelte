@@ -62,7 +62,7 @@
 {#if !redirected}
     <div style='display: flex; justify-content: center; align-items: center;'>
         <img style="width: 100px; height: 100px; margin-right: 20px;" src='favicon.png' alt='music with friends icon'>
-        <div style="display: flex; flex-direction: column; align-items: center;">
+        <div style="text-align: center;">
             <h1>Music With Friends</h1>
             <h2>By Bhavya Phogat</h2>
         </div>

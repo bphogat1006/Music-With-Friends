@@ -1,6 +1,6 @@
 
 /** @type {import('./$types').RequestHandler} */
-export async function POST({request, locals}) {
+export async function POST() {
     return new Response(null, {
         status: 200,
         headers: {

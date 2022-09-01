@@ -1,24 +1,18 @@
 <script>
-    import { PUBLIC_REDIRECT_URI } from '$env/static/public';
+    import TopListens from './TopListens.svelte';
+    import { fade } from 'svelte/transition'
     import { onMount } from 'svelte';
- 
-    let promise = new Promise((resolve, reject) => {});
+
     let displayName = null
-    let topListens = null
+    onMount(getDisplayName)
 
-    onMount(() => {
-        promise = loadData()
-    })
-
-    async function loadData() {
-        // get user's display name
+    async function getDisplayName() {
         const userDataResponse = await fetch('/api/user')
         if (!userDataResponse.ok) {
             const error = await userDataResponse.text()
             throw new Error(error)
         }
         displayName = (await userDataResponse.json()).display_name
-        return 'ok'
     }
 
     async function logout(code) {
@@ -29,29 +23,28 @@
 
 <button on:click={logout} class="logout">Logout</button>
 
-{#await promise}
-    <p>Loading...</p>
-{:catch error}
-    <p>Error!</p>
-    <p>{error}</p>
-{/await}
+<h1>
+    Hello{#if displayName}, <span class="displayName" transition:fade>{displayName}</span>{/if}!
+</h1>
 
-{#if displayName}
-    <h1>Hello, <span class="green">{displayName}</span>!</h1>
-{/if}
+<TopListens/>
 
 <style>
-    .green {
+    .displayName {
         color: cornflowerblue;
     }
     .logout {
         position: absolute;
         right: 10px;
         top: 10px;
+        padding: 5px;
         border: 2;
         border-radius: 7px;
         font-size: larger;
         background-color: aqua;
         cursor: pointer;
+    }
+    h1 {
+        text-align: center;
     }
 </style>
