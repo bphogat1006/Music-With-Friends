@@ -1,5 +1,5 @@
 import { query } from '$lib/db'
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -12,7 +12,12 @@ export async function handle({ event, resolve }) {
         const cookieHeader = event.request.headers.get('cookie')
         if (cookieHeader && cookieHeader.includes('session')) {
             const session_id = cookieHeader.split('session=')[1].split(';')[0]
-            await fetch(event.url.origin + '/api/refresh', {body:session_id,method:'POST'}) // refresh access token
+            const refreshResponse = await fetch(event.url.origin + '/api/refresh', {body:session_id,method:'POST'}) // refresh access token
+            if (!refreshResponse.ok) {
+                const err = await refreshResponse.json()
+                console.log('Failed to refresh access token')
+                throw error(refreshResponse.status, JSON.stringify(err))
+            }
             const queryResult = await query(`select access_token from users where session_id='${session_id}'`)
             const access_token = queryResult[0].access_token
             const authHeader = 'Bearer ' + access_token

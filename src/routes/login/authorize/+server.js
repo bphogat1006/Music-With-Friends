@@ -52,8 +52,9 @@ export async function POST({request}) {
         return await response.json()
     }
 
-    // get access & refresh tokens
+    // get access & refresh tokens and expiration time (in seconds)
     const {access_token, refresh_token, expires_in} = await getTokenData()
+    const expiration = parseInt(Date.now()/1000) + expires_in
 
     // get user data
     const {display_name, id} = await getUserData(access_token)
@@ -64,17 +65,28 @@ export async function POST({request}) {
     // insert user into db
     // check if user exists first!
     const queryResult = await query(`select * from users where id='${id}';`)
-    if (queryResult.length === 0) {
-        await query(`insert into users values ('${id}', '${display_name}', '${access_token}', '${refresh_token}', '${session_id}')`)
+    if (queryResult.length !== 1) {
+        if (queryResult.length > 1) {
+            await query('delete from users where id='+id)
+        }
+        await query(`
+            insert into users
+            (id, display_name, access_token, refresh_token, session_id, expiration)
+            values ('${id}', '${display_name}', '${access_token}', '${refresh_token}', '${session_id}', '${expiration}')
+        `)
     } else {
-        await query(`update users set display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', session_id='${session_id}' where id='${id}'`)
+        await query(`
+            update users
+            set display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', session_id='${session_id}', expiration='${expiration}'
+            where id='${id}'
+        `)
     }
 
-    const maxAge = 2*365*24*60*60 // 2 years
+    const maxSessionAge = 2*365*24*60*60 // 2 years
     return new Response(null, {
         status: 200,
         headers: {
-            'Set-Cookie': `session=${session_id}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly`
+            'Set-Cookie': `session=${session_id}; Path=/; Max-Age=${maxSessionAge}; Secure; HttpOnly`
         }
     })
 }
