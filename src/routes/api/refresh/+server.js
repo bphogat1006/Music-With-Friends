@@ -6,7 +6,7 @@ import { error } from '@sveltejs/kit';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({request}) {
     const session_id = await request.text()
-    const {refresh_token, expiration} = (await query(`select refresh_token, expiration from users where session_id='${session_id}'`))[0]
+    const {refresh_token, expiration} = (await query(`select refresh_token, expiration from users join sessions on (users.id=sessions.user_id) where session_id='${session_id}'`))[0]
     // check if access token does not need refreshing
     if (expiration - parseInt(Date.now()/1000) > 300) {
         return new Response(null, {status: 200})

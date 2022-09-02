@@ -4,7 +4,7 @@ import { query } from '$lib/db'
 import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').RequestHandler} */
-export async function POST({request}) {
+export async function POST({ request }) {
     async function getTokenData() {
         // set fetch params
         const authCode = await request.text()
@@ -60,7 +60,7 @@ export async function POST({request}) {
     const {display_name, id} = await getUserData(access_token)
 
     // generate a session ID
-    const session_id = parseInt(Math.random()*1000000)
+    const session_id = parseInt(Math.random()*100000000)
 
     // insert user into db
     // check if user exists first!
@@ -71,16 +71,21 @@ export async function POST({request}) {
         }
         await query(`
             insert into users
-            (id, display_name, access_token, refresh_token, session_id, expiration)
-            values ('${id}', '${display_name}', '${access_token}', '${refresh_token}', '${session_id}', '${expiration}')
+            (id, display_name, access_token, refresh_token, expiration) values
+            ('${id}', '${display_name}', '${access_token}', '${refresh_token}', '${expiration}')
         `)
     } else {
         await query(`
             update users
-            set display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', session_id='${session_id}', expiration='${expiration}'
+            set display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', expiration='${expiration}'
             where id='${id}'
         `)
     }
+    await query(`
+        insert into sessions
+        (session_id, user_id) values
+        ('${session_id}', '${id}')
+    `)
 
     const maxSessionAge = 2*365*24*60*60 // 2 years
     return new Response(null, {

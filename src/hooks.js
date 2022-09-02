@@ -1,5 +1,5 @@
 import { query } from '$lib/db'
-import { error, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -18,7 +18,7 @@ export async function handle({ event, resolve }) {
                 console.log('Failed to refresh access token')
                 throw error(refreshResponse.status, JSON.stringify(err))
             }
-            const queryResult = await query(`select access_token from users where session_id='${session_id}'`)
+            const queryResult = await query(`select access_token from users join sessions on (users.id=sessions.user_id) where session_id='${session_id}'`)
             const access_token = queryResult[0].access_token
             const authHeader = 'Bearer ' + access_token
             event.request.headers.set('Authorization', authHeader)
