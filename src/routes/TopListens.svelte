@@ -24,6 +24,7 @@
             throw new Error(error)
         }
         topArtistsData = (await topArtistsResponse.json()).map(artist => new Object({
+            id: artist.id,
             title: artist.name,
             img: artist.img
         }))
@@ -37,6 +38,7 @@
             throw new Error(error)
         }
         topTracksData = (await topTracksResponse.json()).map(track => new Object({
+            id: track.id,
             title: track.name,
             subtitle: track.artist,
             img: track.img
@@ -65,9 +67,7 @@
         <input type="range" bind:value={topItemsLimit} min=10 max=50 on:input={e => topItemsLimitTweened.set(parseInt(e.target.value))}>
         <p>{Math.round(topItemsLimit)}</p>
     </div>
-{/if}
 
-{#if topArtistsData}
     <h3>Top Artists</h3>
     <div class="topListens">
         {#each topArtistsData.slice(0, $topItemsLimitTweened) as item}

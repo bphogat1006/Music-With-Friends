@@ -1,12 +1,21 @@
 <script>
-    import { fly, slide } from "svelte/transition";
-
+    import { scale, slide } from "svelte/transition";
+    import { cubicInOut } from "svelte/easing"
+    
+    export let id;
     export let title;
     export let subtitle = null;
-    export let img;
+    export let img = null;
+    
+    let type = subtitle ? 'track' : 'artist'
+    
+    function openLink() {scale
+        const url = `https://open.spotify.com/${type}/${id}`
+        window.open(url, '_blank');
+    }
 </script>
 
-<div class="row" in:fly="{{y: -100, duration: 400}}" out:slide>
+<div class="row" out:slide={{easing: cubicInOut}} in:scale={{duration: 600}} on:click={openLink}>
     {#if img}
         <img src={img} alt={title}>
     {/if}
@@ -26,6 +35,7 @@
         margin: 4px 8px;
         background-color: aliceblue;
         border-radius: 25px;
+        cursor: pointer;
     }
     .col {
         text-align: center;
