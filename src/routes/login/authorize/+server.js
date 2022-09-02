@@ -62,28 +62,19 @@ export async function POST({ request }) {
     // generate a session ID
     const session_id = parseInt(Math.random()*100000000)
 
-    // insert user into db
-    // check if user exists first!
-    const queryResult = await query(`select * from users where id='${id}';`)
-    if (queryResult.length !== 1) {
-        if (queryResult.length > 1) {
-            await query('delete from users where id='+id)
-        }
-        await query(`
-            insert into users
-            (id, display_name, access_token, refresh_token, expiration) values
-            ('${id}', '${display_name}', '${access_token}', '${refresh_token}', '${expiration}')
-        `)
-    } else {
-        await query(`
-            update users
-            set display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', expiration='${expiration}'
-            where id='${id}'
-        `)
-    }
+    // insert/update user into db
     await query(`
-        insert into sessions
-        (session_id, user_id) values
+        INSERT INTO users
+        (id, display_name, access_token, refresh_token, expiration)
+        VALUES
+        ('${id}', '${display_name}', '${access_token}', '${refresh_token}', '${expiration}')
+        ON DUPLICATE KEY UPDATE
+        display_name='${display_name}', access_token='${access_token}', refresh_token='${refresh_token}', expiration='${expiration}'
+    `)
+    await query(`
+        INSERT INTO sessions
+        (session_id, user_id)
+        VALUES
         ('${session_id}', '${id}')
     `)
 

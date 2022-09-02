@@ -34,12 +34,12 @@ export async function handle({ event, resolve }) {
 }
 
 /** @type {import('@sveltejs/kit').HandleError} */
-export function handleError({ error, event }) {
+export async function handleError({ error, event }) {
     if (JSON.stringify(error) === '{}') return
     const errorString = JSON.stringify({
         error,
         event
     }).replaceAll('\'', '`')
-    const queryString = `insert into log (type, error) values ('error', '${errorString}')`
-    query(queryString)
+    const queryString = `INSERT INTO log (type, error) VALUES ('error', '${errorString}')`
+    await query(queryString)
 }

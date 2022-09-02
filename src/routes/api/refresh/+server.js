@@ -37,6 +37,10 @@ export async function POST({request}) {
     const newExpiration = parseInt(Date.now()/1000) + expires_in
     
     // update access token
-    await query(`update users set access_token='${access_token}', expiration='${newExpiration}' where refresh_token='${refresh_token}'`)
+    await query(`
+        UPDATE users
+        SET access_token='${access_token}', expiration='${newExpiration}'
+        WHERE refresh_token='${refresh_token}'
+    `)
     return new Response(null, {status: 200})
 }
