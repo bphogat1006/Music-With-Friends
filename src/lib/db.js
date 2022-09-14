@@ -35,3 +35,6 @@ export async function query(query, log = false) {
         }
     }
 }
+export function sanitizeInput() {
+    
+}

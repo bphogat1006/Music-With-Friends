@@ -1,19 +1,9 @@
 <script>
+    import ScanLibrary from './ScanLibrary.svelte';
     import TopListens from './TopListens.svelte';
-    import { fade } from 'svelte/transition'
-    import { onMount } from 'svelte';
 
-    let displayName = null
-    onMount(getDisplayName)
-
-    async function getDisplayName() {
-        const userDataResponse = await fetch('/api/user')
-        if (!userDataResponse.ok) {
-            const error = await userDataResponse.text()
-            throw new Error(error)
-        }
-        displayName = (await userDataResponse.json()).display_name
-    }
+    export let data
+    const displayName = data.displayName
 
     async function logout(code) {
         await fetch('logout', {method: 'POST'})
@@ -24,8 +14,10 @@
 <button on:click={logout} class="logout">Logout</button>
 
 <h1>
-    Hello{#if displayName}, <span class="displayName" transition:fade>{displayName}</span>{/if}!
+    Hello, <span class="displayName">{displayName}</span>!
 </h1>
+
+<ScanLibrary inProgress={data.inProgress}/>
 
 <TopListens/>
 

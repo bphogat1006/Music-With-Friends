@@ -22,7 +22,10 @@ export async function GET({ request, url }) {
     const data = (await response.json()).items.map((track) => new Object({
         id: track.id,
         name: track.name,
-        artist: track.artists[0].name,
+        artist: {
+            id: track.artists[0].id,
+            name: track.artists[0].name
+        },
         img: (track.album.images && track.album.images[0]) ? track.album.images[track.album.images.length-1].url : null
     }))
     return new Response(JSON.stringify(data), { status: 200 })

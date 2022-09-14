@@ -40,7 +40,7 @@
         topTracksData = (await topTracksResponse.json()).map(track => new Object({
             id: track.id,
             title: track.name,
-            subtitle: track.artist,
+            subtitle: track.artist.name,
             img: track.img
         }))
     }

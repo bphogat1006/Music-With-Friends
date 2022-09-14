@@ -1,3 +1,4 @@
+import { PUBLIC_HOSTNAME } from '$env/static/public'
 import { query } from '$lib/db'
 import { error } from '@sveltejs/kit';
 
@@ -12,7 +13,7 @@ export async function handle({ event, resolve }) {
         const cookieHeader = event.request.headers.get('cookie')
         if (cookieHeader && cookieHeader.includes('session')) {
             const session_id = cookieHeader.split('session=')[1].split(';')[0]
-            const refreshResponse = await fetch(event.url.origin + '/api/refresh', {body:session_id,method:'POST'}) // refresh access token
+            const refreshResponse = await fetch(PUBLIC_HOSTNAME + '/api/refresh', {body:session_id,method:'POST'}) // refresh access token
             if (!refreshResponse.ok) {
                 const err = await refreshResponse.json()
                 console.log('Failed to refresh access token')
