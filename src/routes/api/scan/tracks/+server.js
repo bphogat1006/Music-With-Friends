@@ -52,12 +52,7 @@ export async function GET({ request }) {
         `)
 
         // TEMP
-        // if (progress > 200) break
+        // if (progress > 500) break
     }
-    await query(`
-        UPDATE progress p
-        SET p.progress='0', currentObject=NULL, p.for='Playlists'
-        WHERE user_id='${user_id}'
-    `)
     return new Response(JSON.stringify(savedTracks), {status: 200})
 }

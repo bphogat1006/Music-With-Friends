@@ -10,6 +10,11 @@ export async function GET({ request }) {
     const user_id = (await query(`select * from sessions where session_id='${session_id}'`))[0].user_id
     
     // get user's playlists
+    await query(`
+        UPDATE progress p
+        SET p.for='Playlists', p.progress=0, currentObject='Getting playlists...'
+        WHERE user_id='${user_id}'
+    `)
     let allPlaylists = []
     let offset = 0
     let totalNumTracks = 0
@@ -83,7 +88,7 @@ export async function GET({ request }) {
             `)
 
             // TEMP
-            // if (progress > 0.08) break loop
+            // if (progress > 0.1) break loop
         }
     }
     return new Response(JSON.stringify(playlistsTracks), {status: 200})

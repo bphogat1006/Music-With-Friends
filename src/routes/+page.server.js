@@ -25,7 +25,10 @@ export async function load({ request, locals }) {
         cookie: request.headers.get('cookie')
     }})
     if (progressResponse.ok) {
-        pageData.inProgress = true
+        const progress = await progressResponse.json()
+        if (progress.for !== 'Building Playlist') {
+            pageData.scanInProgress = true
+        }
     }
     const users = await query(`
         SELECT id, display_name FROM users

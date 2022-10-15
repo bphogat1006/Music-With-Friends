@@ -26,7 +26,6 @@ export async function query(query, log = false) {
         return res;
     } catch (err) {
         console.log('QUERY ERROR:');
-        console.log(err);
         throw err;
     } finally {
         if (log) console.log("RELEASING conn" + conn.threadId);

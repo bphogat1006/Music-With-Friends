@@ -3,18 +3,17 @@ import { query } from '$lib/db'
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
-    // get session id
     const authHeader = request.headers.get('Authorization')
     const cookieHeader = request.headers.get('cookie')
     const session_id = cookieHeader.split('session=')[1].split(';')[0]
     const user_id = (await query(`select * from sessions where session_id='${session_id}'`))[0].user_id
     
-    // abort if there is an ongoing scan
-    const ongoingScans = await query(`
+    // abort if there is an ongoing process
+    const ongoingProcess = await query(`
         SELECT * FROM progress WHERE user_id='${user_id}'
     `)
-    if (ongoingScans.length) {
-        return new Response('There is another scan in progress already', {status: 409})
+    if (ongoingProcess.length) {
+        return new Response('There is another ongoing process', {status: 409})
     }
 
     // commence library scan
@@ -32,7 +31,7 @@ export async function POST({ request }) {
         `)
 
         // insert row into 'progress' table
-        await query(`INSERT INTO progress (user_id) VALUES ('${user_id}')`)
+        await query(`INSERT INTO progress (user_id, \`for\`) VALUES ('${user_id}', 'Liked Songs')`)
 
         // scan library
         // saved tracks
@@ -109,8 +108,8 @@ export async function POST({ request }) {
                 artistsInserted.set(track.artist.id, null)
             }
             query(`
-                INSERT INTO tracks (id, artist_id, user_id, liked, topTracksRanking)
-                VALUES ('${track.id}', '${track.artist.id}', '${user_id}', 0, ${topTracks.indexOf(track.id)})
+                INSERT INTO tracks (id, artist_id, user_id, liked, topTracksRanking, playlistOccurrences)
+                VALUES ('${track.id}', '${track.artist.id}', '${user_id}', 0, ${topTracks.indexOf(track.id)}, 1)
                 ON DUPLICATE KEY UPDATE playlistOccurrences = playlistOccurrences + 1
             `)
             incrementProgress()
@@ -126,9 +125,10 @@ export async function POST({ request }) {
             }
             incrementProgress()
         }
+        const allTracks = savedTracks.concat(playlistsTracks)
         loop: for (const topTrack of topTracksData) {
             incrementProgress()
-            for (const track of savedTracks.concat(playlistsTracks)) {
+            for (const track of allTracks) {
                 if (topTrack.id === track.id) {
                     continue loop
                 }

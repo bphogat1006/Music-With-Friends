@@ -43,7 +43,7 @@
             client_id: PUBLIC_CLIENT_ID,
             response_type: 'code',
             redirect_uri: encodeURI(PUBLIC_REDIRECT_URI),
-            // show_dialog: true,
+            show_dialog: true,
             scope: 'user-top-read user-library-read playlist-read-private playlist-read-collaborative playlist-modify-public'
         })
         url += urlSearchParams.toString()

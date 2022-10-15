@@ -1,5 +1,6 @@
 <script>
     import ScanLibrary from './ScanLibrary.svelte';
+    import SelectUser from './SelectUser.svelte';
     import TopListens from './TopListens.svelte';
 
     export let data
@@ -17,7 +18,9 @@
     Hello, <span class="displayName">{displayName}</span>!
 </h1>
 
-<ScanLibrary inProgress={data.inProgress}/>
+<ScanLibrary inProgress={data.scanInProgress}/>
+
+<SelectUser users={data.users}/>
 
 <TopListens/>
 
